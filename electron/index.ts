@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // Native
 import { join } from 'path';
 
@@ -6,13 +7,18 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent, nativeTheme } from 'electron
 import isDev from 'electron-is-dev';
 
 const height = 600;
-const width = 800;
+const width = 960;
 
-function createWindow() {
+async function createWindow() {
+  // Dynamically import electron-is-dev
+  const isDev = (await import('electron-is-dev')).default;
+
   // Create the browser window.
   const window = new BrowserWindow({
     width,
     height,
+    minHeight: width,
+    maxHeight: height,
     //  change to false to use AppBar
     frame: false,
     show: true,
@@ -20,6 +26,13 @@ function createWindow() {
     fullscreenable: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js')
+    }
+  });
+
+  // Prevent window from being resized below minimum dimensions
+  window.on('will-resize', (event, newBounds) => {
+    if (newBounds.width < width || newBounds.height < height) {
+      event.preventDefault();
     }
   });
 

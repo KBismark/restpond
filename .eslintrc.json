@@ -22,7 +22,7 @@
     "plugins": [
         "react",
         "@typescript-eslint",
-        "prettier"
+        // "prettier"
     ],
     "rules": {
         // Prettier

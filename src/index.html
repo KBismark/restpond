@@ -1,12 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>Vite + React + TS</title>
+    
   </head>
   <body class="dark">
     <div id="root" class="root"></div>
     <script type="module" src="./main.tsx"></script>
+    <style>
+      :root {
+        --color-primary: #A445ED;
+        --color-text: #2D2D2D;
+        --color-grey: #757575;
+        --color-background: #FFFFFF;
+        --color-error: #FF5252;
+        --font-sans: 'Inter', sans-serif;
+        --font-serif: 'Lora', serif;
+        --font-mono: 'Inconsolata', monospace;
+        --font-hedvig: "Hedvig Letters Serif", serif;
+      }
+      *{
+        box-sizing: border-box;
+        scrollbar-width: none;
+      }
+      body{
+        font-optical-sizing: auto;
+        font-style: normal;
+        /* overflow-y: hidden;
+        height: 100vh;
+        width: 100vw; */
+
+      }
+      .font--hedvig{
+        font-family: "Hedvig Letters Serif", serif;
+      }
+      .font--mono{
+        font-family: 'Inconsolata', monospace;
+      }
+      .font--serif{
+        font-family: 'Lora', serif;
+      }
+      .font--sans{
+        font-family: 'Inter', sans-serif;
+      }
+
+      button{
+        outline: none;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif:opsz@12..24&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
   </body>
 </html>

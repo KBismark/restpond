@@ -1,0 +1,28 @@
+import { JsonView } from '../json-view';
+
+export const JsonContent = () => {
+  const exampleData = {
+    path: "/users/:id",
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer token",
+      "Content-Type": "application/json"
+    },
+    response: {
+      status: 200,
+      body: {
+        id: ":id",
+        name: "John Doe",
+        details: ["age", "email", "phone"]
+      }
+    }
+  };
+
+  return (
+    <div className="prose prose-slate w-full mt-8">
+      <div className="bg-gray-100 p-4 rounded-lg font-mono text-sm">
+        <JsonView data={exampleData} />
+      </div>
+    </div>
+  );
+};

@@ -1,18 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppBar from './AppBar';
-
 import SwitchDarkMode from './SwitchDarkMode';
 import SelectLanguage from './SelectLanguage';
 
+import MainHeader from './components/commons/header';
+import SidePanelNavigation from './components/commons/sidebar';
+import { ReactAppRouter } from './components/router';
+import { RouterConfig } from './router.config';
+import EndpointsDashboard from './components/endpoints';
+import Dashboard from './components/dashboard';
+import Sidebar from './components/sidebar-routes';
+import { useSideBarStore } from './services/sidebar.service';
+
 function App() {
-  console.log(window.ipcRenderer);
+  // console.log(window.ipcRenderer);
 
   const [isOpen, setOpen] = useState(false);
   const [isSent, setSent] = useState(false);
   const [fromMain, setFromMain] = useState<string | null>(null);
+   const { currentTab } = useSideBarStore({ watch: ['currentTab'] })!;
   const { t } = useTranslation();
 
+  const currentTabLowerCase = currentTab.toLowerCase();
+  const hideRightSideContent =  currentTabLowerCase === 'endpoints';
+  
   const handleToggle = () => {
     if (isOpen) {
       setOpen(false);
@@ -32,7 +44,7 @@ function App() {
   };
 
   useEffect(() => {
-    window.Main.removeLoading();
+    window.Main&&window.Main.removeLoading();
   }, []);
 
   useEffect(() => {
@@ -43,53 +55,128 @@ function App() {
   }, [fromMain, isSent]);
 
   return (
-    <div className="flex flex-col">
-      {window.Main && (
-        <div className="flex-none">
-          <AppBar />
+    <main className={`relative font-serif-f text-sm ${window.Main?'select-none': ''}`}>
+      <MainHeader />
+      {/* <SidePanelNavigation /> */}
+      {/* {
+        currentTabLowerCase === 'projects' || currentTabLowerCase === 'endpoints' ? <Sidebar moveToTop={false} /> : <SidePanelNavigation />
+      } */}
+       <Sidebar moveToTop={false} />
+      <ReactAppRouter config={RouterConfig} />
+      
+      {
+        hideRightSideContent ? null : (
+          <div className="lg:w-[400px] lg:fixed lg:right-0 lg:top-0 lg:bottom-0 overflow-y-auto bg-white px-6 box-border lgx:mt-20 lgx:pt-2 pt-14 pb-24 border-l border-gray-100 shadow-sm ">
+            <APIKey />
+            <ServerLogs />
         </div>
-      )}
-      <div className="flex-auto">
-        <div className="ml-4 mr-4 mt-4 flex items-center justify-between">
-          <SwitchDarkMode />
-          <SelectLanguage />
-        </div>
-        <div className="flex flex-col justify-center items-center h-full pt-32 space-y-4">
-          <h1 className="text-2xl dark:text-gray-200">Vite + React + Typescript + Electron + Tailwind</h1>
-          <button
-            className="bg-yellow-400 py-2 px-4 rounded focus:outline-none shadow hover:bg-yellow-200 dark:text-black"
-            onClick={handleToggle}
-          >
-            {t('common.clickMe')}
-          </button>
-          {isOpen && (
-            <div className="flex flex-col space-y-4 items-center">
-              <div className="flex space-x-3">
-                <h1 className="text-xl dark:text-gray-50">{t('common.welcome')}</h1>
-                <button
-                  onClick={sendMessageToElectron}
-                  className=" bg-green-400 rounded px-4 py-0 focus:outline-none hover:bg-green-300 dark:text-black"
-                >
-                  {t('common.send')}
-                </button>
-              </div>
-              {isSent && (
-                <div>
-                  <h4 className="dark:text-green-500 text-green-600">{t('common.messageSent')}</h4>
-                </div>
-              )}
-              {fromMain && (
-                <div>
-                  {' '}
-                  <h4 className="dark:text-yellow-200 text-yellow-800">{t(fromMain)}</h4>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        )
+      }
+      {/* <EndpointsDashboard />
+      <Dashboard id='User' /> */}
+    </main>
   );
 }
 
 export default App;
+
+
+
+const APIKey: React.FC = () => {
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">API Key</h2>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="flex-1 bg-gray-50 p-3 rounded">
+          eash365dnj-373m?udt-dfs23cjdu
+        </div>
+        <button className="bg-orange-100 text-orange-500 px-4 py-2 rounded">
+          Regenerate
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// components/ServerLogs.tsx
+
+type ServerLogEntry = {
+  customerName: string;
+  company: string;
+  phoneNumber: string;
+  email: string;
+  country: string;
+  status: 'Active' | 'Inactive';
+};
+
+const ServerLogs: React.FC = () => {
+  const logs: ServerLogEntry[] = [
+    {
+      customerName: 'Jane Cooper',
+      company: 'Microsoft',
+      phoneNumber: '(225) 555-0118',
+      email: 'jane@microsoft.com',
+      country: 'United States',
+      status: 'Active',
+    },
+    {
+      customerName: 'Floyd Miles',
+      company: 'Yahoo',
+      phoneNumber: '(205) 555-0100',
+      email: 'floyd@yahoo.com',
+      country: 'Kiribati',
+      status: 'Inactive',
+    },
+  ];
+
+  return (
+    <div className="mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Recent server logs</h2>
+        {/* <div className="flex items-center gap-4">
+          <input
+            type="search"
+            placeholder="Search"
+            className="px-4 py-2 border rounded-lg"
+          />
+          <select title='Select option' className="px-4 py-2 border rounded-lg">
+            <option>Newest</option>
+            <option>Oldest</option>
+          </select>
+        </div> */}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="p-4 text-left">Ip Address</th>
+              <th className="p-4 text-left">Endpoint</th>
+              <th className="p-4 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log) => (
+              <tr key={log.email} className="border-b">
+                <td className="p-4 text-sm">{log.customerName}</td>
+                <td className="p-4 font-mono-f text-sm">{log.email}</td>
+                <td className="p-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      log.status === 'Active'
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-red-100 text-red-600'
+                    }`}
+                  >
+                    {log.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
