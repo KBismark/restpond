@@ -21,37 +21,40 @@ export const TreeItem: React.FC<TreeItemProps> = ({
   const indent = level * 12;
   
   return (
-    <div
+    <button
       className={`
-        flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100
+        flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100 border-none w-full
         ${isSelected ? 'bg-blue-100' : ''}
       `}
       style={{ paddingLeft: `${indent}px` }}
-      onClick={() => onSelect(item.id)}
+      onClick={() => {
+        onSelect(item.id);
+        onToggle(item.id);
+      }}
       onContextMenu={(e) => {
         e.preventDefault();
-        onContextMenu?.(e, item);
+        onContextMenu&&onContextMenu(e, item);
       }}
     >
       {item.type === 'folder' && (
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(item.id);
-          }}
+        <span 
+          // onClick={(e) => {
+          //   e.stopPropagation();
+          //   onToggle(item.id);
+          // }}
           className="p-1"
         >
           {item.isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-        </button>
+        </span>
       )}
       
-      {item.type === 'folder' ? (
-        item.isOpen ? <FolderOpen size={16} /> : <Folder size={16} />
-      ) : (
-        <File size={16} />
-      )}
-      
-      <span className="ml-2 text-sm">{item.name}</span>
-    </div>
+        {item.type === 'folder' ? (
+          item.isOpen ? <FolderOpen size={16} fill='#546e7a' stroke='#263238' /> : <Folder fill='#546e7a' stroke='#263238' size={16} />
+        ) : (
+          <File fill='#b0bec5' stroke='#263238' size={16} />
+        )}
+        
+        <span className="ml-2 text-sm">{item.name}</span>
+    </button>
   );
 };

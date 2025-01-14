@@ -60,8 +60,8 @@ const Dashboard = (props: {tab: string}) => {
   return (
     <div className="flex min-h-screen bg-white px-6 pt-3 pb-6 max-w-7xl mx-auto sm:ml-16 lg:ml-52">
       <div className="flex-1 p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3">
+        <div className="grid grid-cols-3 lgx:grid-cols-5 gap-8">
+          <div className="col-span-3 lgx:col-span-3">
             <WelcomeCard username={tab} />
             
             <div className='hidden'>

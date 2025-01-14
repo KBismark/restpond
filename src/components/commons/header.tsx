@@ -22,35 +22,37 @@ export default memo(function MainHeader(){
     
 
     return (
-        <div className={
-            `draggable z-50 pt-2 px-4 border-b-0 border-b-neutral-200 flex flex-row justify-between items-center sticky top-0 bg-white/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/85`
-        }>
-            <div className="flex flex-row items-center">
-                <img alt="Logo" src={logo} className="block w-8 h-8 rounded" />
-                <div className="text-zinc-900 font-hedvig-f text-[1.8rem] ml-2 font-extrabold">Tritospot</div>
-            </div>
-            <div className="ml-4 mr-4 mt-4 items-center justify-between hidden">
-                <SwitchDarkMode />
-            </div>
+        <div className="bg-black/40 sticky top-0 z-50">
+            <div className={
+                `draggable pt-2 px-4 border-b-0 border-b-neutral-200 flex flex-row justify-between items-center bg-white/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/85`
+            }>
+                <div className="flex flex-row items-center">
+                    <img alt="Logo" src={logo} className="block w-8 h-8 rounded" />
+                    <div className="text-zinc-900 font-hedvig-f text-[1.8rem] ml-2 font-extrabold">Tritospot</div>
+                </div>
+                <div className="ml-4 mr-4 mt-4 items-center justify-between hidden">
+                    <SwitchDarkMode />
+                </div>
 
-                {
-                    <SidePanelNavigation moveToTop={true} />
-                }
-            
-            <div>
-                {
-                    window.Main ? 
-                    (
-                        <div className="flex-none">
-                            <AppBar />
-                        </div>
-                    ) : 
-                    (
-
-                        <span className="text-primary text-sm font-serif-f">Switch to live mode</span>
-                    )
-                }
+                    {
+                        <SidePanelNavigation moveToTop={true} />
+                    }
                 
+                <div>
+                    {
+                        window.Main ? 
+                        (
+                            <div className="flex-none">
+                                <AppBar />
+                            </div>
+                        ) : 
+                        (
+
+                            <span className="text-primary text-sm font-serif-f">Switch to live mode</span>
+                        )
+                    }
+                    
+                </div>
             </div>
         </div>
     )

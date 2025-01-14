@@ -114,7 +114,7 @@ const EndpointsDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold font-hedvig-f">My E-commerce app</h1>
+            {/* <h1 className="text-xl font-semibold font-hedvig-f">My E-commerce app</h1> */}
             <ProjectSelector
               currentProjectId={currentProjectId}
             />
@@ -144,8 +144,9 @@ const EndpointsDashboard = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <button title='Filter' aria-label='Filter endpoints' className="p-2 bg-primary/5 hover:bg-gray-100 rounded-md">
-                  <Filter size={18} className='text-primary' />
+                <button title='Filter' aria-label='Filter endpoints' className="py-2 px-3 bg-primary/5 hover:bg-gray-100 rounded-md flex flex-row items-center justify-center ">
+                  <Filter size={15} className='text-primary' />
+                  <span className='text-primary text-sm font-medium ml-2'>Filter</span>
                 </button>
               </DialogTrigger>
               <DialogContent>
@@ -153,10 +154,10 @@ const EndpointsDashboard = () => {
               </DialogContent>
             </Dialog>
 
-            <button className="px-6 py-2 bg-primary font-serif-f text-white rounded-sm hover:bg-primary/90 transition-all active:scale-[.98] flex items-center gap-2">
+            {/* <button className="hidden px-6 py-2 bg-primary font-serif-f text-white rounded-sm hover:bg-primary/90 transition-all active:scale-[.98] flex items-center gap-2">
               <Plus size={17} className='hidden' />
               <span className='text-sm font-semibold'>New endpoint</span>
-            </button>
+            </button> */}
           </div>
         </motion.div>
 

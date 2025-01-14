@@ -12,6 +12,7 @@ import EndpointsDashboard from './components/endpoints';
 import Dashboard from './components/dashboard';
 import Sidebar from './components/sidebar-routes';
 import { useSideBarStore } from './services/sidebar.service';
+import LoginForm from './components/forms/test';
 
 function App() {
   // console.log(window.ipcRenderer);
@@ -66,9 +67,10 @@ function App() {
       
       {
         hideRightSideContent ? null : (
-          <div className="lg:w-[400px] lg:fixed lg:right-0 lg:top-0 lg:bottom-0 overflow-y-auto bg-white px-6 box-border lgx:mt-20 lgx:pt-2 pt-14 pb-24 border-l border-gray-100 shadow-sm ">
+          <div className="lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-white px-6 box-border lgx:mt-20 lgx:pt-2 pt-14 pb-24 border-l border-gray-100 shadow-sm ">
             <APIKey />
             <ServerLogs />
+            <LoginForm />
         </div>
         )
       }

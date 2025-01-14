@@ -10,7 +10,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
   onCreateFolder,
 }) => {
   return (
-    <div className="flex items-center space-x-2 p-2 border-b">
+    <div className="flex items-center justify-end space-x-2 p-2 border-b">
       <button
         onClick={onCreateFile}
         className="p-1 hover:bg-gray-100 rounded"

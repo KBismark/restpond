@@ -33,26 +33,27 @@ const toggleNode = (nodes: TreeNode[], targetId: string): TreeNode[] => {
   });
 };
 
-export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate }) => {
+export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate, onContextMenu }) => {
   const [selectedId, setSelectedId] = useState<string>();
 
   const renderTree = (nodes: TreeNode[], level: number = 0) => {
     return nodes.map((node) => (
       <div key={node.id}>
-    <TreeItem
-      item={node}
-      level={level}
-      onToggle={(id) => {
-        const updated = toggleNode(data, id);
-        onUpdate(updated);
-      }}
-      isSelected={selectedId === node.id}
-      onSelect={setSelectedId}
-    />
-    {node.type === 'folder' && node.isOpen && node.children && (
-      renderTree(node.children, level + 1)
-    )}
-  </div>
+        <TreeItem
+          item={node}
+          level={level}
+          onToggle={(id) => {
+            const updated = toggleNode(data, id);
+            onUpdate(updated);
+          }}
+          isSelected={selectedId === node.id}
+          onSelect={setSelectedId}
+          onContextMenu={onContextMenu}
+        />
+        {node.type === 'folder' && node.isOpen && node.children && (
+          renderTree(node.children, level + 1)
+        )}
+      </div>
     ));
   };
 

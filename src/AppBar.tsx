@@ -18,13 +18,13 @@ function AppBar() {
     <>
       <div className="py-0.5 flex justify-between text-white">
         <div className="inline-flex -mt-1">
-          <button onClick={window.Main.Minimize} className="undraggable text-gray-900 md:px-4 lg:px-3 pt-1 hover:bg-gray-300">
+          <button title='Minimize' onClick={window.Main.Minimize} className="undraggable rounded-md text-gray-900 px-[18px] py-2 hover:bg-gray-300">
             &#8211;
           </button>
-          <button onClick={handleToggle} className="undraggable text-gray-900 px-6 lg:px-5 pt-1 hover:bg-gray-300">
+          <button title='Maximize' onClick={handleToggle} className="undraggable rounded-md text-gray-900 px-4 lgx:px-5 py-2 hover:bg-gray-300">
             {isMaximize ? '\u2752' : '⃞'}
           </button>
-          <button onClick={window.Main.Close} className="undraggable text-gray-900 px-4 pt-1 hover:bg-red-500 hover:text-white">
+          <button title='Close' onClick={window.Main.Close} className="undraggable rounded-md text-gray-900 px-4 py-2 hover:bg-red-500 hover:text-white">
             &#10005;
           </button>
         </div>
