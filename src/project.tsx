@@ -33,7 +33,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-64 p-0 border-none overflow-hidden rounded-lg ml-16">
+      <DropdownMenuContent align="start" className="w-64 p-0 border-none overflow-hidden rounded-lg ml-16 shadow-lg">
         <BluryContainer 
           outerContainer={{
             className: 'w-full'
@@ -72,13 +72,13 @@ const DropdownItem: React.FC<{currentProjectId:string; projectId: string; }> = (
     <DropdownMenuItem
       
       onClick={() => updateProjectsStore({actors: ['currentProjectId'], store: {currentProjectId: project.id}})}
-      className="cursor-pointer py-0 px-1 m-0"
+      className="cursor-pointer py-0 px-0 m-0"
     >
       <div className={
-        `flex items-center justify-between ${isSelected&&'bg-white'} hover:bg-white w-full rounded-md px-2 py-2 mt-0.5 transition-all duration-300`
+        `flex items-center justify-between ${isSelected&&'bg-white'} hover:bg-white w-full px-4 py-2.5 transition-all duration-300`
       }>
         <div>
-          <div className="font-medium font-hedvig-f">{project.name}</div>
+          <div className="font-medium font-hedvig-f truncate">{project.name}</div>
           <div className="text-xs text-gray-500">
             {projectEndpointIds.length} endpoints
           </div>
