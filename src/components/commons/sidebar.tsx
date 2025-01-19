@@ -28,39 +28,26 @@ export default function SidePanelNavigation({moveToTop}:{moveToTop?: boolean}){
                 }}
                 className={
                   moveToTop?
-                  `border-2  border-transparent ${selected?'border-b-primary':''}`:
+                  `border-0  border-transparent ${selected?'border-b-white':''}`:
                   `border-2  border-transparent ${selected?'border-t-primary sm:border-t-transparent sm:border-r-primary':''}`
                 }
               >
                 <div 
                   className={
                     moveToTop?
-                    `py-3 px-3 text-sm font-semibold transition-all duration-500 rounded-sm cursor-pointer flex-col sm:flex-row flex justify-between items-center m-0.5 ${selected?'bg-primary/10 text-primary':'hover:bg-white hover:shadow-sm'} `:
+                    `py-2.5 px-4 text-sm font-semibold transition-all duration-500 rounded-full cursor-pointer flex-col sm:flex-row flex justify-between items-center m-0.5 lgx:m-2.5 ${selected?'bg-white text-primary shadow-md':'hover:bg-white hover:shadow-md'} `:
                     `py-3 px-3 text-sm font-semibold cursor-pointer flex-col sm:flex-row flex justify-between items-center m-0.5 ${selected?'bg-primary/10 text-primary':'bg-white hover:bg-gray-50'} `
                   }
                 >
-                  {
-                    selected?
-                      <div className='flex justify-between items-center'>
-                        {tabName==='Home'&&<TbHomeDot className={'text-primary'} size={22} />}
-                        {tabName==='Projects'&&<TbApiApp className={'text-primary'} size={22} />}
-                        {tabName==='Endpoints'&&<PiBracketsCurlyBold className={'text-primary'} size={21} />}
-                        {tabName==='Analysis'&&<FaChartColumn className={'text-primary'} size={20} />}
-                        {tabName==='Logs'&&<TbLogs className='text-primary'  size={22} />}
-                        {tabName==='Help'&&<LucideHandHelping className={'text-primary'} size={22} />}
-                        <span className='ml-2.5 -mb-1 hidden lg:block'>{tabName}</span>
-                      </div>
-                    :
-                      <div className='flex justify-between items-center'>
-                        {tabName==='Home'&&<TbHomeDot className='text-gray-600' size={22} />}
-                        {tabName==='Projects'&&<TbApiApp className='text-gray-600' size={22} />}
-                        {tabName==='Endpoints'&&<PiBracketsCurlyBold className='text-gray-600' size={21} />}
-                        {tabName==='Analysis'&&<FaChartColumn className='text-gray-600' size={20} />}
-                        {tabName==='Logs'&&<TbLogs className='text-gray-700'  size={22} />}
-                        {tabName==='Help'&&<LucideHandHelping className='text-gray-600' size={22} />}
-                        <span className='ml-2.5 -mb-1 hidden lg:block '>{tabName}</span>
-                      </div>
-                  }
+                  <div className='flex justify-between items-center'>
+                    {tabName==='Home'&&<TbHomeDot className='text-gray-600' size={18} />}
+                    {tabName==='Projects'&&<TbApiApp className='text-gray-600' size={18} />}
+                    {tabName==='Endpoints'&&<PiBracketsCurlyBold className='text-gray-600' size={17} />}
+                    {tabName==='Analysis'&&<FaChartColumn className='text-gray-600' size={16} />}
+                    {tabName==='Logs'&&<TbLogs className='text-gray-700'  size={18} />}
+                    {tabName==='Help'&&<LucideHandHelping className='text-gray-600' size={18} />}
+                    <span className='ml-1.5 mb-0 hidden lg:block text-sm text-gray-700'>{tabName}</span>
+                  </div>
                   {!moveToTop&&<IoChevronForward className="hidden lg:block" size={11} />}
                   {/* {selected&&<IoChevronDown className="block sm:hidden" size={11} />} */}
                 </div>

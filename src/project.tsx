@@ -9,6 +9,7 @@ import {
 import { updateProjectsStore, useCurrentProjectData, useProjectService, useProjectsStore } from './components/projects/projects.service';
 import { getStorageProvider} from 'statestorejs';
 import BluryContainer from './components/commons/blury-container';
+import ActionBar from './components/commons/action-tabs';
 
 interface ProjectSelectorProps {
   currentProjectId: string;
@@ -33,26 +34,38 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-64 p-0 border-none overflow-hidden rounded-lg ml-16 shadow-lg">
+      <DropdownMenuContent align="start" className="w-72 p-0 border-none overflow-hidden rounded-lg ml-16 shadow-lg max-h-80 overflow-y-auto relative">
         <BluryContainer 
           outerContainer={{
             className: 'w-full'
           }} 
           innerContainer={{
-            className: 'w-full py-1'
+            className: 'w-full'
           }}
         >
-           <div className='flex justify-end mr-1'>
+          
+           {/* <div className='flex justify-end mr-1'>
               <button onClick={undefined} title='Close' className='border-none py-1.5 px-2 hover:bg-white rounded-sm' >
                 <X size={13} />
               </button>
-            </div>
+            </div> */}
           {projectIds.map((projectId: string) => {
             return <DropdownItem key={projectId} 
               projectId={projectId} 
               currentProjectId={currentProjectId} 
             />
           })}
+
+          {/* <ActionBar onClose={()=>{}}></ActionBar> */}
+          {/* <DropdownMenuItem  className='group bg-white hover:bg-red-50 hover:border-t-transparent transition-all duration-600 focus:bg-red-50 flex justify-center border-t mt-4 sticky bottom-0 rounded-none'>
+              <button
+                className={`flex w-[calc(100%-32px)] items-center px-4 py-2 text-sm group-hover:text-red-600 bg-white rounded-lg group-hover:bg-transparent  group-hover:rounded-none group-hover:w-full transition-all duration-500`}
+                onClick={undefined}
+              >
+                <X size={14} className="mr-2" aria-hidden={'true'} />
+                Close
+              </button>
+          </DropdownMenuItem> */}
         </BluryContainer>
       </DropdownMenuContent>
 
@@ -75,7 +88,7 @@ const DropdownItem: React.FC<{currentProjectId:string; projectId: string; }> = (
       className="cursor-pointer py-0 px-0 m-0"
     >
       <div className={
-        `flex items-center justify-between ${isSelected&&'bg-white'} hover:bg-white w-full px-4 py-2.5 transition-all duration-300`
+        `flex items-center justify-between ${isSelected&&'bg-blue-gray-50/50'} hover:bg-white w-full px-4 py-2.5 transition-all duration-300`
       }>
         <div>
           <div className="font-medium font-hedvig-f truncate">{project.name}</div>

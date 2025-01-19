@@ -2,36 +2,15 @@ import { useState } from 'react';
 import { TreeItem } from './item';
 import { TreeNode } from './types';
 import { TreeActions } from './actions';
+import { updateSideBarRouteStore } from './store';
 
 interface FolderTreeProps {
   data: TreeNode[];
   onUpdate: (nodes: TreeNode[]) => void;
-  onContextMenu?: (e: React.MouseEvent, node: TreeNode) => void;
+  onContextMenu: (e: React.MouseEvent, node: TreeNode, level: number) => void;
   filter?: string;
 }
 
-const toggleNode = (nodes: TreeNode[], targetId: string): TreeNode[] => {
-  return nodes.map(node => {
-    if (node.id === targetId) {
-      // Toggle the node's open state
-      return {
-        ...node,
-        isOpen: !node.isOpen
-      };
-    }
-    
-    // If node has children, recursively search them
-    if (node.children?.length) {
-      return {
-        ...node,
-        children: toggleNode(node.children, targetId)
-      };
-    }
-    
-    // Return unchanged node if no match
-    return node;
-  });
-};
 
 export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate, onContextMenu }) => {
   const [selectedId, setSelectedId] = useState<string>();
@@ -43,8 +22,8 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate, onContex
           item={node}
           level={level}
           onToggle={(id) => {
-            const updated = toggleNode(data, id);
-            onUpdate(updated);
+            const updatedData = toggleNode(data, id);
+            updateSideBarRouteStore({actors: ['projects'], store: {projects: updatedData}});
           }}
           isSelected={selectedId === node.id}
           onSelect={setSelectedId}
@@ -72,4 +51,26 @@ export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate, onContex
 
 
 
+const toggleNode = (nodes: TreeNode[], targetId: string): TreeNode[] => {
+  return nodes.map(node => {
+    if (node.id === targetId) {
+      // Toggle the node's open state
+      return {
+        ...node,
+        isOpen: !node.isOpen
+      };
+    }
+    
+    // If node has children, recursively search them
+    if (node.children?.length) {
+      return {
+        ...node,
+        children: toggleNode(node.children, targetId)
+      };
+    }
+    
+    // Return unchanged node if no match
+    return node;
+  });
+};
 

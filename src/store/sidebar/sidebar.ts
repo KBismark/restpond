@@ -1,5 +1,5 @@
 import { createStore, createStoreHook } from "statestorejs";
-import { appProvider } from "./global";
+import { appProvider } from "../global";
 
 const config = {
     currentTab: 'Home',

@@ -5,6 +5,7 @@ import { SearchBar } from './search';
 import { ContextMenu } from './context-menu';
 import { TreeNode, ContextMenuPosition } from './types';
 import { useRouteParams } from '../router';
+import { useSideBarRouteStore } from './store';
 
 export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
 //   const {id} = useRouteParams();
@@ -17,25 +18,27 @@ export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
   } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [treeData, setTreeData] = useState<TreeNode[]>([
-    {
-      id: '1',
-      name: 'Project',
-      type: 'folder',
-      isOpen: true,
-      children: [
-        { id: '2', name: 'src', type: 'folder', children: [] },
-        { id: '3', name: 'config.json', type: 'file' }
-      ]
-    }
-  ]);
+  const {projects: treeData} = useSideBarRouteStore({watch: ['projects']})!
+
+  // const [treeData, setTreeData] = useState<TreeNode[]>([
+  //   {
+  //     id: '1',
+  //     name: 'Project',
+  //     type: 'folder',
+  //     isOpen: true,
+  //     children: [
+  //       { id: '2', name: 'src', type: 'folder', children: [] },
+  //       { id: '3', name: 'config.json', type: 'file' }
+  //     ]
+  //   }
+  // ]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent, item: TreeNode | string, type: 'file' | 'tab') => {
     e.preventDefault();
     setContextMenu({
       position: { x: e.clientX, y: e.clientY },
       item,
-      type
+      type: 'file'
     });
   }, []);
 
@@ -46,10 +49,10 @@ export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
   const handleDelete = useCallback((item: TreeNode | string) => {
     if (typeof item === 'string') {
       // Handle tab deletion
-      updateSideBarStore({
-        actors: ['tabs'],
-        store: { tabs: tabs.filter(tab => tab !== item) }
-      });
+      // updateSideBarStore({
+      //   actors: ['tabs'],
+      //   store: { tabs: tabs.filter(tab => tab !== item) }
+      // });
     } else {
       // Handle file/folder deletion
       const filterNodes = (nodes: TreeNode[]): TreeNode[] =>
@@ -61,7 +64,7 @@ export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
           return true;
         });
 
-      setTreeData(filterNodes(treeData));
+      // setTreeData(filterNodes(treeData));
     }
     setContextMenu(null);
   }, [tabs, treeData]);
@@ -88,7 +91,7 @@ export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
       <div className="flex-1 overflow-auto">
           <FolderTree
             data={treeData}
-            onUpdate={setTreeData}
+            onUpdate={ /*setTreeData */()=>{}}
             onContextMenu={(e: React.MouseEvent, node: string | TreeNode) => handleContextMenu(e, node, 'file')}
             filter={searchQuery}
           />

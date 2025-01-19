@@ -1,5 +1,7 @@
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File } from 'lucide-react';
 import { TreeNode } from './types'
+import { useState } from 'react';
+import { updateSideBarRouteStore } from './store';
 
 interface TreeItemProps {
   item: TreeNode;
@@ -7,7 +9,7 @@ interface TreeItemProps {
   onToggle: (id: string) => void;
   isSelected: boolean;
   onSelect: (id: string) => void;
-  onContextMenu?: (e: React.MouseEvent, node: TreeNode) => void;
+  onContextMenu: (e: React.MouseEvent, node: TreeNode, level: number) => void;
 }
 
 export const TreeItem: React.FC<TreeItemProps> = ({
@@ -19,6 +21,7 @@ export const TreeItem: React.FC<TreeItemProps> = ({
   onContextMenu
 }) => {
   const indent = level * 12;
+  // const [isOpen, setOpenStatus] = useState(item.isOpen)
   
   return (
     <button
@@ -30,10 +33,12 @@ export const TreeItem: React.FC<TreeItemProps> = ({
       onClick={() => {
         onSelect(item.id);
         onToggle(item.id);
+        // updateSideBarRouteStore({actors: ['selectedItem']})
       }}
       onContextMenu={(e) => {
         e.preventDefault();
-        onContextMenu&&onContextMenu(e, item);
+        onContextMenu(e, item, level);
+        updateSideBarRouteStore({actors: ['contextItem'], store: {contextItem: item}});
       }}
     >
       {item.type === 'folder' && (
@@ -54,7 +59,7 @@ export const TreeItem: React.FC<TreeItemProps> = ({
           <File fill='#b0bec5' stroke='#263238' size={16} />
         )}
         
-        <span className="ml-2 text-sm">{item.name}</span>
+        <span className="ml-2 text-sm font-sans-f font-medium truncate">{item.name}</span>
     </button>
   );
 };

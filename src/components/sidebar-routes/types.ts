@@ -7,6 +7,7 @@ export interface TreeNode {
   children?: TreeNode[];
   parentId?: string;
   isOpen?: boolean;
+  isDynamic?: boolean
 }
 
 export interface FileOperation {

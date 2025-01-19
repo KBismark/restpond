@@ -7,57 +7,99 @@ import {
 } from '../ui/dropdown-menu';
 import BluryContainer from '../commons/blury-container';
 import { Input } from '@headlessui/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import ActionBar from '../commons/action-tabs';
+import { getRouteNames, RouteType } from '../../helpers/routes';
 
 interface TreeActionsProps {
-  onCreateFile: () => void;
-  onCreateFolder: () => void;
+  onCreateFile?: (fileData: RouteType[]) => void;
+  onCreateFolder?: (fileData: RouteType[]) => void;
+  openRouteCreationDropDown?: boolean;
+  onCloseButtonAtTopClicked?: ()=>void;
 }
 
 export const TreeActions: React.FC<TreeActionsProps> = ({
   onCreateFile,
   onCreateFolder,
+  openRouteCreationDropDown,
+  onCloseButtonAtTopClicked
 }) => {
-   const [type, setType] = useState<'File'|'Folder'>('File');
+  const [isOpened, setIsOpened] = useState(!!openRouteCreationDropDown);
+   const [type, setType] = useState<'File'|'Folder'|''>('');
+   const inputRef = useRef<HTMLInputElement>(null)
 
-   const createFile = useCallback(()=>{
+   const triggeredByFile = useCallback(()=>{
     setType('File');
-    // onCreateFile()
-   },[type]);
+    setIsOpened(true);
+    // alert('File');
+   },[type, isOpened]);
 
 
-   const createFolder = useCallback(()=>{
+   const triggeredByFolder = useCallback(()=>{
     setType('Folder');
-    // onCreateFile()
+    setIsOpened(true);
+    // ontriggeredByFile()
+    // alert('Folder')
+   },[type, isOpened])
+
+
+   const close = useCallback(()=>{
+    setIsOpened(!isOpened);
+   },[isOpened])
+
+   // Create a route
+   const save = useCallback(()=>{
+    const routeNames = getRouteNames((inputRef.current?.value||''));
+    if(routeNames.length<1) return;
+    if(type === 'File'){
+      // Create file
+      onCreateFile!(routeNames);
+    }else{
+      // `index` is not allowed to be a folder name
+      const lastRoute = routeNames[routeNames.length-1]
+      if(lastRoute.name === 'index'&&lastRoute.type === 'static'){
+        // TODO: Alert that 'index' can not be used as folder name
+        return;
+      }
+      onCreateFolder!(routeNames);
+    }
+    
+    close() // Closes action pop up
+
    },[type])
 
+  
 
   return (
-    <DropdownMenu>
-      <div className="flex items-center justify-end space-x-2 p-2 border-b">
-      
-      <DropdownMenuTrigger onClick={createFile} asChild>
-        <button
-          onClick={createFile}
-          className="p-1 hover:bg-gray-100 rounded"
-          title="New File"
-        >
-          <FilePlus size={16} />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuTrigger onClick={createFolder} asChild>
-        <button
-          onClick={createFolder}
-          className="p-1 hover:bg-gray-100 rounded"
-          title="New Folder"
-        >
-          <FolderPlus size={16} />
-        </button>
-      </DropdownMenuTrigger>
+    <DropdownMenu open={isOpened} onOpenChange={close}>
+      <ActionBar onClose={onCloseButtonAtTopClicked}>
+        <div>
+            <DropdownMenuTrigger className='bg-red-900'></DropdownMenuTrigger>
+            { 
+              onCreateFile&&
+              <button
+                type='button'
+                onClick={triggeredByFile}
+                className="p-1 hover:bg-gray-100 rounded"
+                title="New File"
+              >
+                <FilePlus size={16} />
+              </button>
+            }
+           {
+            onCreateFolder&&
+              <button
+                onClick={triggeredByFolder}
+                className="p-1 hover:bg-gray-100 rounded"
+                title="New Folder"
+              >
+                <FolderPlus size={16} />
+              </button>
+           }
+        </div>
+      </ActionBar>
 
-      </div>
-
-      <DropdownMenuContent align="start" className="w-52 p-0 border-none overflow-hidden rounded-lg -ml-7 shadow-lg bg-transparent">
+      <DropdownMenuContent align="start" className="w-56 p-0 border-none overflow-hidden rounded-lg ml-2 mt-3 shadow-lg bg-transparent">
         <BluryContainer 
           outerContainer={{
             className: 'w-full'
@@ -66,35 +108,22 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
             className: 'w-full py-1'
           }}
         >
-            <div className='p-4'><Input type='text' placeholder={`${type} name`} className='w-full px-2 bg-white/70 rounded-sm' /></div>
-            
+          <ActionBar onClose={close}>
             <button
-              className={`flex w-full items-center px-4 py-2 text-sm text-red-600 bg-red-50/10 hover:bg-red-50/20 transition-all duration-300`}
-              onClick={undefined}
+              type='button'
+              className={`flex w-full justify-center items-center px-4 py-2 text-sm bg-white hover:bg-gray-100/70 rounded-lg transition-all duration-300`}
+              onClick={save}
             >
-              <Trash2 size={14} className="mr-2" aria-hidden={'true'} />
-              Cancel
+              {/* <X size={14} className="mr-1" aria-hidden={'true'} /> */}
+              Save
             </button>
+          </ActionBar>
+        
+          <div className='p-4'><Input ref={inputRef} type='text' placeholder={`${type} name`} className='w-full px-2 bg-white/70 rounded-sm focus:outline-blue-300' /></div>
           
         </BluryContainer>
       </DropdownMenuContent>
     
-    {/* <div className="flex items-center justify-end space-x-2 p-2 border-b">
-      <button
-        onClick={onCreateFile}
-        className="p-1 hover:bg-gray-100 rounded"
-        title="New File"
-      >
-        <FilePlus size={16} />
-      </button>
-      <button
-        onClick={onCreateFolder}
-        className="p-1 hover:bg-gray-100 rounded"
-        title="New Folder"
-      >
-        <FolderPlus size={16} />
-      </button>
-    </div> */}
     </DropdownMenu>
   );
 };

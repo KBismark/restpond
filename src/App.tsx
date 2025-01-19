@@ -68,7 +68,7 @@ function App() {
       {
         hideRightSideContent ? null : (
           <div className="lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-white px-6 box-border lgx:mt-20 lgx:pt-2 pt-14 pb-24 border-l border-gray-100 shadow-sm ">
-            <APIKey />
+            {/* <APIKey /> */}
             <ServerLogs />
             <LoginForm />
         </div>
