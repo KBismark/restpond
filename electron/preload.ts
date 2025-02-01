@@ -1,4 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
+import { ResponseObject } from './server/electron-server-events';
 
 /**
  * Using the ipcRenderer directly in the browser through the contextBridge ist not really secure.
@@ -155,6 +156,35 @@ declare global {
 }
 
 const api = {
+  send: (channel: 'toMain' | 'dataRequest' | 'dataUpdate', data: any) => {
+    const validChannels = ['toMain', 'dataRequest', 'dataUpdate'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+  receive: (
+    channel: 'fromMain' | 'dataUpdate' | 'notification' | 'statusUpdate' | 'error' | 'activate-route',
+    func: (...args: any[]) => void
+  ) => {
+    const validChannels = ['fromMain', 'dataUpdate', 'notification', 'statusUpdate', 'error', 'activate-route'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => func(...args));
+    }
+  },
+  // Remove listener when no longer needed
+  removeListener: (
+    channel: 'fromMain' | 'dataUpdate' | 'notification' | 'statusUpdate' | 'error' | 'activate-route',
+    func: (...args: any[]) => void
+  ) => {
+    const validChannels = ['fromMain', 'dataUpdate', 'notification', 'statusUpdate', 'error', 'activate-route'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.removeListener(channel, func);
+    }
+  },
+
+  sendActivatedRouteResponse: (data: ResponseObject) => {
+    ipcRenderer.send('activated-route-response', data);
+  },
   /**
    * Here you can expose functions to the renderer process
    * so they can interact with the main (electron) side
@@ -179,13 +209,16 @@ const api = {
   },
   removeLoading: () => {
     removeLoading();
-  },
+  }
   /**
    * Provide an easier way to listen to events
-   */
-  on: (channel: string, callback: (data: any) => void) => {
-    ipcRenderer.on(channel, (_, data) => callback(data));
-  }
+  //  */
+  // on: (channel: string, callback: (data: any) => void) => {
+  //   ipcRenderer.on(channel, (_, data) => {
+  //     console.log('on', channel, data);
+  //     callback(data);
+  //   });
+  // }
 };
 
 contextBridge.exposeInMainWorld('Main', api);

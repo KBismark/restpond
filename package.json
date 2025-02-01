@@ -34,6 +34,7 @@
     "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix"
   },
   "dependencies": {
+    "@codigex/cachestorage": "^0.4.1",
     "@headlessui/react": "^2.2.0",
     "@material-tailwind/react": "^2.1.10",
     "@radix-ui/react-dialog": "^1.1.4",

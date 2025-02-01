@@ -6,7 +6,7 @@ export default withMT({
   darkMode: ['class'],
   theme: {
     screens: {
-      lgx: '1180px',
+      lgx: '1180px'
     },
     extend: {
       borderRadius: {
@@ -72,6 +72,15 @@ export default withMT({
       sans: ['Inter', 'ui-sans-serif', 'system-ui']
     }
   },
-  plugins: [require('tailwindcss-animate')]
+  plugins: [
+    require('tailwindcss-animate'),
+    // function ({ addUtilities }) {
+    //   addUtilities({
+    //     '.content-editable': {
+    //       contentEditable: 'true'
+    //     }
+    //   });
+    // }
+  ]
 });
 

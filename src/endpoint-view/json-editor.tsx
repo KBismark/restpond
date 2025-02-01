@@ -35,8 +35,8 @@ export const JsonEditor = () => {
   };
 
   return (
-    <div className="prose prose-slate w-full mt-8">
-      <div className="bg-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto pr-4">
+    <div className="prose prose-slate w-full">
+      <div className="bg-transparent p-0 rounded-lg font-mono text-[12px] overflow-x-auto pr-4">
         <JsonView data={exampleData} />
       </div>
     </div>

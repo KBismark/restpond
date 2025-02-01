@@ -74,7 +74,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
     <DropdownMenu open={isOpened} onOpenChange={close}>
       <ActionBar onClose={onCloseButtonAtTopClicked}>
         <div>
-            <DropdownMenuTrigger className='bg-red-900'></DropdownMenuTrigger>
+            <DropdownMenuTrigger></DropdownMenuTrigger>
             { 
               onCreateFile&&
               <button

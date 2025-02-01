@@ -9,6 +9,7 @@ interface JsonViewProps {
 
 export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp }) => {
   const [isExpanded, setIsExpanded] = useState(level===0);
+  // const isExpanded = true
   const indent = level * 20;
 
   if (typeof data !== 'object' || data === null) {
@@ -22,14 +23,15 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
   const bracketType = isArray ? ['[', ']'] : ['{', '}'];
 
   return (
-    <div className={`font-mono-f font-normal ${!isExpanded? 'flex items-center':''}`} style={{ marginLeft: 10}}>
+    <div className={`font-mono-f text-[12px] ml-1 font-normal ${!isExpanded? 'flex items-center':''}`} >
       <span 
+        role='button'
         onClick={() => setIsExpanded(!isExpanded)}
         className="cursor-pointer inline-flex items-center hover:text-blue-400"
       >
         {!isEmpty && (
-          <span className="mr-1">
-            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          <span className="mr-[1px]">
+            {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
           </span>
         )}
         <span className="text-[#676464] font-mono-f font-normal">{bracketType[0]}</span>
@@ -38,8 +40,8 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
       {isExpanded ? (
         <div className="ml-2">
           {Object.entries(data).map(([key, value], index) => (
-            <div key={key} className="flex font-mono-f font-normal">
-              <span className="text-blue-300 ml-6">
+            <div key={key} className="flex font-mono-f font-medium">
+              <span className="text-[#79c0ff] ml-1 ">
                 {isArray ? '' : `"${key}": `}
               </span>
               <JsonView data={value} level={level + 1} isLastProp={index===dataLengthLess1} />
@@ -47,9 +49,9 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
           ))}
         </div>
       ) : (
-        <span className="text-gray-500 font-mono-f font-normal">...</span>
+        <span role='button' onClick={() => setIsExpanded(!isExpanded)} className="text-gray-500 font-mono-f font-normal cursor-pointer ">...</span>
       )}
-      <span className={`text-[#676464] font-mono-f font-normal ${isExpanded&&'ml-4'}`}>{bracketType[1]}{level!==0&&!isLastProp&&','} </span>
+      <span className={`text-[#676464] font-mono-f font-normal ${isExpanded&&'ml-1'}`}>{bracketType[1]}{level!==0&&!isLastProp&&','} </span>
     </div>
   );
 };

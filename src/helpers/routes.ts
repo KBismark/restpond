@@ -51,3 +51,13 @@ export const actOnProjectRouteItem = (nodes: TreeNode[], targetId: string, cb: (
     return node;
   });
 };
+
+
+export const removeNodeById = (nodes: TreeNode[], itemId: string): TreeNode[] =>
+  nodes.filter((node) => {
+    if (node.id === itemId) return false;
+    if (node.children) {
+      node.children = removeNodeById(node.children, itemId);
+    }
+  return true;
+});

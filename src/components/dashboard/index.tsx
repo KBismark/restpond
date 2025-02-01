@@ -58,51 +58,53 @@ const Dashboard = (props: {tab: string}) => {
   
     
   return (
-    <div className="flex min-h-screen bg-white px-6 pt-3 pb-6 max-w-7xl mx-auto sm:ml-16 lg:ml-52">
-      <div className="flex-1 p-8">
-        <div className="grid grid-cols-3 lgx:grid-cols-5 gap-8">
-          <div className="col-span-3 lgx:col-span-3">
-            <WelcomeCard username={tab} />
-            
-            <div className='hidden'>
-              <h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-lg font-semibold mb-4">Project 1</h3>
-                  <p className="text-gray-500 mb-4">Description of project 1</p>
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
-                    View Project
-                  </button>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-lg font-semibold mb-4">Project 2</h3>
-                  <p className="text-gray-500 mb-4">Description of project 2</p>
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
-                    View Project
-                  </button>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-lg font-semibold mb-4">Project 3</h3>
-                  <p className="text-gray-500 mb-4">Description of project 3</p>
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
-                    View Project
-                  </button>
+    <div className='2xl:justify-center 2xl:flex-row 2xl:flex'>
+      <div className="flex min-h-screen bg-white px-6 pt-3 pb-6 max-w-7xl sm:ml-16 md:ml-52 2xl:w-[1200px] ">
+        <div className="flex-1 p-8">
+          <div className="grid grid-cols-3 lgx:grid-cols-5 gap-8">
+            <div className="col-span-3 lgx:col-span-3">
+              <WelcomeCard username={tab} />
+              
+              <div className='hidden'>
+                <h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">Project 1</h3>
+                    <p className="text-gray-500 mb-4">Description of project 1</p>
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                      View Project
+                    </button>
+                  </div>
+                  <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">Project 2</h3>
+                    <p className="text-gray-500 mb-4">Description of project 2</p>
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                      View Project
+                    </button>
+                  </div>
+                  <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">Project 3</h3>
+                    <p className="text-gray-500 mb-4">Description of project 3</p>
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                      View Project
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              <div>
+                <ReadmeContent />
+              </div>
+
+              <div>
+                <JsonContent />
+              </div>
+
             </div>
 
-            <div>
-              <ReadmeContent />
-            </div>
-
-            <div>
-              <JsonContent />
-            </div>
-
+            <div></div>
+            
           </div>
-
-          <div></div>
-          
         </div>
       </div>
     </div>

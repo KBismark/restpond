@@ -5,9 +5,9 @@ import EndpointsDashboard from "./components/endpoints";
 import EndpointView from "./endpoint-view";
 
 export const RouterConfig: RouterConfigs = {
-  '/': Dashboard,
+  '/': EndpointView,
   '/:tab': Dashboard,
   '/projects/:id': EndpointView,
-  '/projects/:id/:file': EndpointView,
+  '/projects/:id/:file/:routeName': EndpointView,
   '/endpoints': EndpointsDashboard
 };

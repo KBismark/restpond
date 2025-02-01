@@ -13,47 +13,64 @@ import Dashboard from './components/dashboard';
 import Sidebar from './components/sidebar-routes';
 import { useSideBarStore } from './services/sidebar.service';
 import LoginForm from './components/forms/test';
+import { JsonEditor } from './endpoint-view/json-editor';
+import { activateRoute, RequestObject } from './helpers/server-app-bridge';
+import { restoreSideBarRouteStore } from './components/sidebar-routes/stores';
+
 
 function App() {
-  // console.log(window.ipcRenderer);
-
-  const [isOpen, setOpen] = useState(false);
-  const [isSent, setSent] = useState(false);
-  const [fromMain, setFromMain] = useState<string | null>(null);
-   const { currentTab } = useSideBarStore({ watch: ['currentTab'] })!;
-  const { t } = useTranslation();
-
-  const currentTabLowerCase = currentTab.toLowerCase();
-  const hideRightSideContent =  currentTabLowerCase === 'endpoints';
-  
-  const handleToggle = () => {
-    if (isOpen) {
-      setOpen(false);
-      setSent(false);
-    } else {
-      setOpen(true);
-      setFromMain(null);
-    }
-  };
-  const sendMessageToElectron = () => {
-    if (window.Main) {
-      window.Main.sendMessage(t('common.helloElectron'));
-    } else {
-      setFromMain(t('common.helloBrowser'));
-    }
-    setSent(true);
-  };
-
+  const [ready, setReady] = useState(false)
   useEffect(() => {
+    if(!ready) {
+      // Error is handled in function itself
+      restoreSideBarRouteStore().finally(()=>{
+        setReady(true);
+      })
+      return;
+    }
+
+    // Remove loading if app ready
     window.Main&&window.Main.removeLoading();
-  }, []);
+
+  }, [ready]);
+
+  // useEffect(() => {
+  //   if(window.Main){
+  //     const onActivate = (data: RequestObject) => {
+  //       console.log('Message from main:', data);
+  //       const str = JSON.stringify(data)
+  //       window.Main.sendMessage(str)
+  //       setFromMain(str)
+  //     }
+
+  //     window.Main.receive('activate-route', onActivate);
+  //     return ()=>window.Main.removeListener('activate-route', onActivate)
+  //   }
+  // }, []);
 
   useEffect(() => {
-    if (isSent && window.Main)
-      window.Main.on('message', (message: string) => {
-        setFromMain(message);
-      });
-  }, [fromMain, isSent]);
+    if (ready&&window.Main){
+
+      const onActivate = (data: RequestObject) => {
+        // console.log('Message from main:', data);
+        // const str = JSON.stringify(data)
+        // window.Main.sendMessage(str)
+        // setFromMain(str)
+        activateRoute(data)
+      }
+
+      window.Main.receive('activate-route', onActivate);
+      window.Main.sendMessage('From Browser');
+      return ()=>window.Main.removeListener('activate-route', onActivate)
+    
+      
+    }
+      
+  }, [ready]);
+  
+  // window.Main&&window.Main.sendMessage('common.helloElectron');
+
+  if(!ready) return null;
 
   return (
     <main className={`relative font-serif-f text-sm ${window.Main?'select-none': ''}`}>
@@ -63,16 +80,31 @@ function App() {
         currentTabLowerCase === 'projects' || currentTabLowerCase === 'endpoints' ? <Sidebar moveToTop={false} /> : <SidePanelNavigation />
       } */}
        <Sidebar moveToTop={false} />
-      <ReactAppRouter config={RouterConfig} />
+      {/* <div className='relative w-full max-w-full flex flex-col items-center justify-center'> */}
+        <ReactAppRouter config={RouterConfig} />
+      {/* </div> */}
       
       {
-        hideRightSideContent ? null : (
-          <div className="lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-white px-6 box-border lgx:mt-20 lgx:pt-2 pt-14 pb-24 border-l border-gray-100 shadow-sm ">
-            {/* <APIKey /> */}
-            <ServerLogs />
-            <LoginForm />
-        </div>
-        )
+        <div className="lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-blue-100/5 px-6 box-border lgx:mt-16 lgx:pt-2 pt-14 pb-24 ">
+          
+          <div className="mt-6 mb-4">
+              <div className="flex items-center justify-between">
+                <h2  className="text-lg font-semibold">Most Recent Request</h2>
+              </div>
+          </div>
+        
+
+          <JsonEditor />
+
+          <div className="mt-6 mb-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Most Recent Response</h2>
+              </div>
+          </div>
+        
+
+          <JsonEditor />
+      </div>
       }
       {/* <EndpointsDashboard />
       <Dashboard id='User' /> */}

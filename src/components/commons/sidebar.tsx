@@ -12,7 +12,7 @@ export default function SidePanelNavigation({moveToTop}:{moveToTop?: boolean}){
     return (
       <div className={
         moveToTop?
-        'undraggable flex justify-around top-0 left-0 bottom-0 transition-all border-b-2 border-b-gray-200/35 shadow-none':
+        'undraggable flex justify-around top-0 left-0 bottom-0 transition-all border-b-2 border-b-gray-200/35 shadow-none 2xl:-ml-64':
         'lg:w-[12.5rem] flex justify-around sm:block sm:fixed sm:pt-14 top-0 left-0 bottom-0 bg-white transition-all border-r border-r-gray-100 shadow-sm '
       }>
         {

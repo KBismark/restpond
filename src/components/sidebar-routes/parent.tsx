@@ -2,45 +2,77 @@ import { useState } from 'react';
 import { TreeItem } from './item';
 import { TreeNode } from './types';
 import { TreeActions } from './actions';
-import { updateSideBarRouteStore } from './store';
+import { addSideBarRoute, getSideBarStoreField, updateSideBarRouteStore, useSideBarRouteStore } from './stores';
+import { ContextId, useStateContext } from 'statestorejs';
+import { SidebarState } from '.';
+import { RouteType } from '../../helpers/routes';
 
 interface FolderTreeProps {
-  data: TreeNode[];
-  onUpdate: (nodes: TreeNode[]) => void;
-  onContextMenu: (e: React.MouseEvent, node: TreeNode, level: number) => void;
+  // data: TreeNode[];
+  // onUpdate: (nodes: TreeNode[]) => void;
+  // onContextMenu: (e: React.MouseEvent, node: TreeNode, level: number) => void;
   filter?: string;
+  parentContextId: ContextId
 }
 
 
-export const FolderTree: React.FC<FolderTreeProps> = ({ data, onUpdate, onContextMenu }) => {
-  const [selectedId, setSelectedId] = useState<string>();
+export const FolderTree: React.FC<FolderTreeProps> = ({ parentContextId }) => {
+  // const [selectedId, setSelectedId] = useState<string>();
+  const {projects: data, selectedItem} = useSideBarRouteStore({watch: ['projects', 'selectedItem']})!;
 
-  const renderTree = (nodes: TreeNode[], level: number = 0) => {
-    return nodes.map((node) => (
-      <div key={node.id}>
-        <TreeItem
-          item={node}
-          level={level}
-          onToggle={(id) => {
-            const updatedData = toggleNode(data, id);
-            updateSideBarRouteStore({actors: ['projects'], store: {projects: updatedData}});
-          }}
-          isSelected={selectedId === node.id}
-          onSelect={setSelectedId}
-          onContextMenu={onContextMenu}
-        />
-        {node.type === 'folder' && node.isOpen && node.children && (
-          renderTree(node.children, level + 1)
-        )}
-      </div>
-    ));
+  const parentContext = useStateContext<SidebarState>(parentContextId, []);
+  const onContextMenu = (e: React.MouseEvent)=>{
+    parentContext?.onContextMenu({x: e.clientX, y: e.clientY})
+  }
+
+
+  const onCreateFolder = (folderData: RouteType[])=>{
+      if(selectedItem&&selectedItem.type === 'folder'){
+        addSideBarRoute({routes: folderData, parentId: selectedItem.id, type: 'folder'})
+      }
+    }
+  
+    const onCreateFile = (fileData: RouteType[])=>{
+      if(selectedItem&&selectedItem.type === 'folder'){
+        addSideBarRoute({routes: fileData, parentId: selectedItem.id, type: 'file'})
+      }
+    }
+
+
+
+
+  const renderTree = (nodes: TreeNode[], level: number = 0, url: string ='') => {
+    return nodes.map((node) => {
+      const currentUrl = `${url}/${node.name}`;
+      const actualRouteName = `${url}~${node.isDynamic? node.name.replace('{',':').replace(/(\})$/, '') : node.name}`;
+      return (
+        <div key={node.id}>
+          <TreeItem
+            url={currentUrl}
+            routeName={actualRouteName}
+            item={node}
+            level={level}
+            // onToggle={(id) => {
+            //   const updatedData = toggleNode(data, id);
+            //   updateSideBarRouteStore({actors: ['projects'], store: {projects: updatedData}});
+            // }}
+            isSelected={selectedItem?.id === node.id}
+            // onSelect={setSelectedId}
+            onContextMenu={onContextMenu}
+          />
+          {node.type === 'folder' && node.isOpen && node.children && (
+            renderTree(node.children, level + 1, currentUrl)
+          )}
+        </div>
+      )
+    });
   };
 
   return (
     <div className="w-full h-full bg-white">
       <TreeActions
-        onCreateFile={() => {/* implement */}}
-        onCreateFolder={() => {/* implement */}}
+        onCreateFile={onCreateFile}
+        onCreateFolder={onCreateFolder}
       />
       <div className="mt-2">
         {renderTree(data)}

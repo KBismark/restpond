@@ -175,6 +175,11 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
+"@codigex/cachestorage@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.npmjs.org/@codigex/cachestorage/-/cachestorage-0.4.1.tgz"
+  integrity sha512-DGIR+J70tu8JnSTmTnAPuNEBPmIbckAWhDktcxhhuPzwy2tAQBjGTyNa/+zbK1jMit+FQxKzfwHVXFI4UzrrJQ==
+
 "@develar/schema-utils@~2.6.5":
   version "2.6.5"
   resolved "https://registry.npmjs.org/@develar/schema-utils/-/schema-utils-2.6.5.tgz"

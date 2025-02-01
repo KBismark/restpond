@@ -75,7 +75,7 @@ const EndpointsDashboard = () => {
       });
   }, [currentProject, currentProjectEndpoints, searchQuery, filters, sortConfig]);
 
-  console.log('Filtered endpoints:', filteredEndpoints);
+  // console.log('Filtered endpoints:', filteredEndpoints);
   
 
   const handleSort = (key: keyof Endpoint) => {
