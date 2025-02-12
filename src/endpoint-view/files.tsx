@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Edit2, Pin, PinIcon, Plus, Trash2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown, Edit2, FireExtinguisher, Pin, PinIcon, Plus, Save, SaveAll, Trash2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
 import { JsonEditor } from "./json-editor";
 import { Selector, SelectorOptions } from "./selector";
 import { RequestHeaders } from "./file-content/resquest-headers";
-import { EndpointData, updateEndpointViewStore, updateEndpointViewStoreRequest, updateEndpointViewStoreInfo, useEndpointViewStore, useEndpointViewStoreRequest, useEndpointViewStoreInfo, BODY_TYPES, useEndpointViewStoreResponse, RESPONSE_STATUSES, RESPONSE_BODY_TYPES, updateEndpointViewStoreResponse, storeName, cachestorage, setInitialEndpointData } from "./store";
+import { EndpointData, updateEndpointViewStore, useEndpointViewStore, BODY_TYPES, RESPONSE_STATUSES, RESPONSE_BODY_TYPES, storeName, cachestorage, setInitialEndpointData, getEndpointViewStore } from "./store";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { getDerivedStore, getStore } from "statestorejs";
@@ -13,6 +13,7 @@ import { ResponseHeaders } from "./file-content/response-headers";
 import { Button } from "../components/ui/button";
 import { matchRouter, RequestObject, ResponseObject, sendActivatedRouteResponse } from "../helpers/server-app-bridge";
 import { StorageResult } from "@codigex/cachestorage";
+import { IoCog, IoSaveOutline } from "react-icons/io5";
 
 const METHOD_TYPES: SelectorOptions = {
     'GET': true,
@@ -66,10 +67,10 @@ const FileViewContent = (props: { id: string; }) => {
   // const {file: endpointName, routeName} = props;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const requestBodyRef = useRef<SyntaxHighlighter>(null);
-  const {isActive, file: endpointName, routeName} = useEndpointViewStore({watch: ['isActive', 'routeName', 'file']})!;
+  const {isActive, file: endpointName, routeName, info, request: {method, body, bodyType}} = useEndpointViewStore({watch: ['isActive', 'routeName', 'file', 'info', 'request']})!;
   const status = isActive ? "Active" : 'Inactive';
-  const info = useEndpointViewStoreInfo({ watch: ['description', 'summary'] })!;
-  const {method, body, bodyType} = useEndpointViewStoreRequest({watch: ['method', 'bodyType', 'body']})!;
+  // const info = useEndpointViewStoreInfo({ watch: ['description', 'summary'] })!;
+  // const {method, body, bodyType} = useEndpointViewStoreRequest({watch: ['method', 'bodyType', 'body']})!;
 //   const {status:responseStaus, bodyType: responseBodyType, body: responseBody} = useEndpointViewStoreResponse({watch: ['status', 'bodyType','body']})!;
 
     const resolvedEndpointName = useMemo(()=>endpointName.replace(/(\/index)$/,''),[endpointName])
@@ -98,14 +99,16 @@ const FileViewContent = (props: { id: string; }) => {
         
         
 
-         const onBlur = (e: FocusEvent)=>{
-            const value = requestBody.innerText.trim()
-            updateEndpointViewStoreRequest({
-                actors: [],
-                store: {body: value }
+        const onBlur = (e: FocusEvent)=>{
+          const value = requestBody.innerText.trim();
+          const store = getEndpointViewStore();
+          if(store){
+            updateEndpointViewStore({
+              actors: ['request'],
+              store: {request: {...store.request, body: value}}
             });
             requestBody.innerText = value;
-            
+          }
         }
        requestBody.addEventListener('blur', onBlur,false);
 
@@ -120,28 +123,33 @@ const FileViewContent = (props: { id: string; }) => {
   const handleInputTextChange = (text: string, key: keyof Pick<EndpointData['info'], 'description'|'summary'>)=>{
     // Update silently
     // This is to prevent re-renders on every selection change
-    
-    updateEndpointViewStoreInfo({
-        actors: [key],
-        store: {
-            [key]: text
-        }
-    });
-
+    const store = getEndpointViewStore();
+    if(store){
+      updateEndpointViewStore({
+        actors: ['info'],
+        store: {info: {...store.info, [key]: text}}
+      });
+    }
   }
 
     const handleMethodSelection = useCallback((selected: string)=>{
-        updateEndpointViewStoreRequest({
-            actors: ['method'],
-            store: {method: selected as EndpointData['request']['method'] }
-        })
+      const store = getEndpointViewStore();
+      if(store){
+        updateEndpointViewStore({
+          actors: ['request'],
+          store: {request: {...store.request, method: selected as EndpointData['request']['method']}}
+        });
+      }
     }, [])
 
     const handleBodyTypeSelection = useCallback((selected: string)=>{
-        updateEndpointViewStoreRequest({
-            actors:['bodyType'],
-            store: {bodyType: selected as EndpointData['request']['bodyType'] }
-        })
+       const store = getEndpointViewStore();
+      if(store){
+        updateEndpointViewStore({
+          actors: ['request'],
+          store: {request: {...store.request, bodyType: selected as EndpointData['request']['bodyType']}}
+        });
+      }
     }, [])
 
     
@@ -152,17 +160,17 @@ const FileViewContent = (props: { id: string; }) => {
         // Disconnect route
         matchRouter.deactivateRoute(routeName as `/${string}`)
       }else{
-        const routeData = getStore<EndpointData>(appProvider, storeName);
-        if(!routeData) return;
+        // const routeData = getStore<EndpointData>(appProvider, storeName);
+        // if(!routeData) return;
 
         
-        // Connect route
-        try {
-          await cachestorage.setItem<EndpointData>(endpointName, routeData)
-        } catch (error) {
-          // TODO: Let user know that the route could not be connected
-          return;
-        }
+        // // Connect route
+        // try {
+        //   await cachestorage.setItem<EndpointData>(endpointName, routeData)
+        // } catch (error) {
+        //   // TODO: Let user know that the route could not be connected
+        //   return;
+        // }
 
         // Register route to receive requests
         matchRouter.registerRoute(routeName as `/${string}`, async (requestData: RequestObject, params)=>{
@@ -279,10 +287,19 @@ const FileViewContent = (props: { id: string; }) => {
           </TooltipProvider>
         </div>
 
-        <Button onClick={onConnectionButtonClick} size={'sm'} variant={isActive?'outline':'default'} className="transition-all duration-500 w-28" >
-          {isActive? 'Disconnect': 'Connect'}
-        </Button>
+        <div className="flex flex-row items-center gap-4">
+          {/* <button type="button" className='w-10 h-10 rounded-full border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-blue-100/15'>
+            {
+              true? <IoSaveOutline size={22} className="text-gray-600" /> : <BookmarkCheck size={22} className="text-gray-600" />
+            }
+          </button> */}
 
+          <Button onClick={onConnectionButtonClick} size={'sm'} variant={isActive?'outline':'default'} className="transition-all duration-500 w-28" >
+            {isActive? 'Disconnect': 'Connect'}
+          </Button>
+
+          
+        </div>
       </div>
 
       <section className="mb-8 w-full rounded-lg border border-gray-100 shadow-sm bg-white py-3 px-4 flex flex-row">
@@ -330,7 +347,7 @@ const FileViewContent = (props: { id: string; }) => {
           <Selector 
               options={METHODS} 
               selectedKey={method} 
-              stateful={true} 
+              stateful={!true} 
               onChange={handleMethodSelection}
           />
         
@@ -345,7 +362,7 @@ const FileViewContent = (props: { id: string; }) => {
               <Selector 
                   options={BODY_TYPE} 
                   selectedKey={bodyType||'Select response body type'} 
-                  stateful={true} 
+                  stateful={!true} 
                   onChange={handleBodyTypeSelection}
               />
 
@@ -369,15 +386,15 @@ const FileViewContent = (props: { id: string; }) => {
           </section>
         }
 
-      <RequestHeaders />
+      <RequestHeaders routeName={routeName} />
 
-      <ResponseStatus />
+      <ResponseStatus routeName={routeName} />
 
-      <ResponseType />
+      <ResponseType routeName={routeName} />
 
-      <ResponseBody />
+      <ResponseBody routeName={routeName} />
 
-      <ResponseHeaders />
+      <ResponseHeaders routeName={routeName} />
 
       {/* <JsonEditor /> */}
     </div>
@@ -387,14 +404,17 @@ const FileViewContent = (props: { id: string; }) => {
 
 
 
-const ResponseStatus = ()=>{
-    const {status} = useEndpointViewStoreResponse({watch: []})!;
+const ResponseStatus = ({routeName}: {routeName: string})=>{
+    const {response: {status}} = useEndpointViewStore({watch: ['response']})!;
 
      const handleStatusSelection = useCallback((selected: string)=>{
-        updateEndpointViewStoreResponse({
-            actors: ['status'],
-            store: {status: (RESPONSES[selected]) as EndpointData['response']['status'] }
-        })
+      const store = getEndpointViewStore();
+      if(store){
+        updateEndpointViewStore({
+          actors: ['response'],
+          store: {response: {...store.response, status: (RESPONSES[selected]) as EndpointData['response']['status'] }}
+        });
+      }
     }, []);
 
     return(
@@ -405,7 +425,7 @@ const ResponseStatus = ()=>{
             <Selector 
                 options={RESPONSE_STATUS} 
                 selectedKey={`STATUS: ${status}`} 
-                stateful={true} 
+                stateful={!true} 
                 onChange={handleStatusSelection}
             />
           
@@ -414,19 +434,17 @@ const ResponseStatus = ()=>{
 }
 
 
-const ResponseType = ()=>{
-    const {status, bodyType} = useEndpointViewStoreResponse({watch: ['status', 'bodyType']})!;
+const ResponseType = ({routeName}: {routeName: string})=>{
+    const {response: {status, bodyType}} = useEndpointViewStore({watch: ['response']})!;
     
      const handleResponseBodyTypeSelection = useCallback((selected: string)=>{
-        const response = getDerivedStore<EndpointData, 'response'>(appProvider, storeName, 'response');
-        
-        if(response){
-            updateEndpointViewStoreResponse({
-                actors: ['bodyType'],
-                store: {bodyType: ({...response.bodyType, [response.status]: selected}) as EndpointData['response']['bodyType'] }
-            })
+        const store = getEndpointViewStore();
+        if(store){
+          updateEndpointViewStore({
+            actors: ['response'],
+            store: {response: {...store.response, bodyType: {...store.response.bodyType, [store.response.status]: selected}  }}
+          });
         }
-        
     }, []);
 
     return(
@@ -447,8 +465,8 @@ const ResponseType = ()=>{
 
 
 
-const ResponseBody = ()=>{
-    const {status, bodyType, body} = useEndpointViewStoreResponse({watch: ['status', 'bodyType', 'body']})!;
+const ResponseBody = ({routeName}: {routeName: string})=>{
+    const {response: {status, bodyType, body}} = useEndpointViewStore({watch: ['response']})!;
      const responseBodyRef = useRef<SyntaxHighlighter>(null);
 
     useEffect(() => {
@@ -459,11 +477,14 @@ const ResponseBody = ()=>{
             responseBody.contentEditable = 'true'
 
             const onBlur = (e: FocusEvent)=>{
-                const value = responseBody.innerText.trim()
-                updateEndpointViewStoreResponse({
-                    actors: ['body'],
-                    store: {body: {...body, [status]: value} }
-                });
+                const value = responseBody.innerText.trim();
+                const store = getEndpointViewStore();
+                if(store){
+                  updateEndpointViewStore({
+                    actors: ['response'],
+                    store: {response: {...store.response, body: {...store.response.body, [store.response.status]: value}  }}
+                  });
+                }
                 responseBody.innerText = value;
                 
             }

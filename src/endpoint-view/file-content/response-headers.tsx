@@ -1,13 +1,13 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { Selector, SelectorOptions } from "../selector";
-import { Plus } from "lucide-react";
-import {  updateEndpointViewStoreResponse, useEndpointViewStoreResponse } from "../store";
+import { Plus, Trash2 } from "lucide-react";
+import { getEndpointViewStore, updateEndpointViewStore, useEndpointViewStore } from "../store";
 
 
 
 
-export const ResponseHeaders = memo(()=>{
-    const {headers} = useEndpointViewStoreResponse({watch: ['headers']})!
+export const ResponseHeaders = memo(({routeName}: {routeName: string})=>{
+    const {response: {headers}} = useEndpointViewStore({watch: ['response']})!
 
     // Sort headers by name
   const headerNames = useMemo(()=>Object.keys(headers).sort((a, b)=>{
@@ -22,12 +22,28 @@ export const ResponseHeaders = memo(()=>{
 
   const onNewHeaderName = useCallback(()=>{
     if(!headers['']){
-        updateEndpointViewStoreResponse({
-            actors: ['headers'],
-            store: {
-                headers: {...headers,'': ''}
-            }
-        });
+        const store = getEndpointViewStore();
+        if(store){
+            updateEndpointViewStore({
+            actors: ['response'],
+            store: {response: {...store.response, headers: {...store.response.headers, '': ''}  }}
+            });
+        }
+    }
+  },[headers]);
+
+  const onRemoveHeader = useCallback((headerName: string)=>{
+    if(headerName!==''){
+        const store = getEndpointViewStore();
+        if(store){
+            headers[headerName] = '' as any;
+            delete headers[headerName];
+
+            updateEndpointViewStore({
+            actors: ['response'],
+            store: {response: {...store.response, headers: {...headers}  }}
+            });
+        }
     }
   },[headers]);
 
@@ -44,12 +60,13 @@ export const ResponseHeaders = memo(()=>{
     delete headers[headerName];
 
     // Update headers
-    updateEndpointViewStoreResponse({
-        actors: ['headers'],
-        store: {
-            headers: {...headers, [text]: headerValue}
-        }
-    });
+     const store = getEndpointViewStore();
+    if(store){
+        updateEndpointViewStore({
+        actors: ['response'],
+        store: {response: {...store.response, headers: {...store.response.headers, [text]: headerValue}  }}
+        });
+    }
   },[headers]);
 
   const onBlurHeaderValue = useCallback((text: string, headerName: string)=>{
@@ -65,12 +82,13 @@ export const ResponseHeaders = memo(()=>{
     // delete headers[headerName];
 
     // Update headers
-    updateEndpointViewStoreResponse({
-        actors: ['headers'],
-        store: {
-            headers: {...headers, [headerName]: text}
-        }
-    });
+    const store = getEndpointViewStore();
+    if(store){
+        updateEndpointViewStore({
+        actors: ['response'],
+        store: {response: {...store.response, headers: {...store.response.headers, [headerName]: text}  }}
+        });
+    }
   },[headers]);
 
     return(
@@ -97,6 +115,7 @@ export const ResponseHeaders = memo(()=>{
                                 }}
                                 onFocus={(e) => e.target.value = headerName}
                             />
+                            
                             <input
                                 title="Header value"
                                 className={
@@ -110,6 +129,11 @@ export const ResponseHeaders = memo(()=>{
                                 }}
                                 // onFocus={(e) => e.target.value = headerName}
                             />
+                            <div>
+                                <button onClick={()=>onRemoveHeader(headerName)} title="Remove header" type="button" className='group w-7 h-7 rounded-lg border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-red-100/15'>
+                                    <Trash2 size={18} className="text-gray-600 group-hover:text-red-600 transition-all duration-300 " />
+                                </button>
+                            </div>
                         </div>
                     )
                 })

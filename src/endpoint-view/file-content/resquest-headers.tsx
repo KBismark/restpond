@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { Selector, SelectorOptions } from "../selector";
-import { Plus } from "lucide-react";
-import { updateEndpointViewStoreRequest, useEndpointViewStoreRequest } from "../store";
+import { Plus, Trash2 } from "lucide-react";
+import { getEndpointViewStore, updateEndpointViewStore, useEndpointViewStore } from "../store";
 
 
 
@@ -12,8 +12,8 @@ const DEFAULT_REQUEST_HEADER_RULE_TYPES: SelectorOptions = {
 
 const DEFAULT_REQUEST_HEADER_RULES = Object.keys(DEFAULT_REQUEST_HEADER_RULE_TYPES)
 
-export const RequestHeaders = memo(()=>{
-    const {headers} = useEndpointViewStoreRequest({watch: ['headers']})!
+export const RequestHeaders = memo(({routeName}: {routeName: string})=>{
+    const {request: {headers}} = useEndpointViewStore({watch: ['request']})!
 
     // Sort headers by name
   const headerNames = useMemo(()=>Object.keys(headers).sort((a, b)=>{
@@ -28,14 +28,28 @@ export const RequestHeaders = memo(()=>{
 
   const onNewHeaderName = useCallback(()=>{
     if(!headers['']){
-        updateEndpointViewStoreRequest({
-            actors: ['headers'],
-            store: {
-                headers: {...headers,'': 'No Restriction'}
-            }
-        });
+        const store = getEndpointViewStore();
+        if(store){
+            updateEndpointViewStore({
+            actors: ['request'],
+            store: {request: {...store.request, headers: {...store.request.headers, '': 'No Restriction'}  }}
+            });
+        }
     }
   },[headers]);
+
+  const onRemoveHeader = useCallback((headerName: string)=>{
+      if(headerName !== '' && typeof headers[headerName] !== 'undefined'){
+          const store = getEndpointViewStore();
+          if(store){
+              delete headers[headerName];
+              updateEndpointViewStore({
+              actors: ['request'],
+              store: {request: {...store.request, headers: {...headers}  }}
+              });
+          }
+      }
+    },[headers]);
 
   const onBlur = useCallback((text: string, headerName: string)=>{
     text = text.trim();
@@ -50,25 +64,26 @@ export const RequestHeaders = memo(()=>{
     delete headers[headerName];
 
     // Update headers
-    updateEndpointViewStoreRequest({
-        actors: ['headers'],
-        store: {
-            headers: {...headers, [text]: headerRule}
-        }
-    });
+    const store = getEndpointViewStore();
+    if(store){
+        updateEndpointViewStore({
+        actors: ['request'],
+        store: {request: {...store.request, headers: {...store.request.headers, [text]: headerRule}  }}
+        });
+    }
   },[headers]);
 
   const onHeaderRuleChange = useCallback((headerRule: string, headerName: string)=>{
     if(typeof headers[headerName]!=='undefined'&&headers[headerName]!==''&&headers[headerName]!==headerRule){
-        // Update header rule imperatively
-        // This is to prevent re-renders on every selection change
+        
         // headers[headerName] = headerRule; 
-        updateEndpointViewStoreRequest({
-            actors: [],
-            store: {
-                headers: {...headers, [headerName]: headerRule}
-            }
-        });
+        const store = getEndpointViewStore();
+        if(store){
+            updateEndpointViewStore({
+            actors: ['request'],
+            store: {request: {...store.request, headers: {...store.request.headers, [headerName]: headerRule}  }}
+            });
+        }
     }
   },[headers]);
 
@@ -100,12 +115,17 @@ export const RequestHeaders = memo(()=>{
                             <Selector 
                                 options={DEFAULT_REQUEST_HEADER_RULES} 
                                 selectedKey={headers[headerName]} 
-                                stateful={true} 
+                                stateful={!true} 
                                 className="max-w-44" 
                                 onChange={(selected)=>{
                                     onHeaderRuleChange(selected, headerName)
                                 }}
                             />
+                            <div className="ml-4">
+                                <button onClick={()=>onRemoveHeader(headerName)}  title="Remove header" type="button" className='group w-7 h-7 rounded-lg border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-red-100/15'>
+                                    <Trash2 size={18} className="text-gray-600 group-hover:text-red-600 transition-all duration-300 " />
+                                </button>
+                            </div>
                         </div>
                     )
                 })

@@ -106,8 +106,6 @@ function App() {
           <JsonEditor />
       </div>
       }
-      {/* <EndpointsDashboard />
-      <Dashboard id='User' /> */}
     </main>
   );
 }

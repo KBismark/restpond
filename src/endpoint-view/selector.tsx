@@ -17,13 +17,13 @@ export const Selector = ({options, selectedKey, stateful = true, onChange, class
     // const optionKeys = useMemo(()=>Object.keys(options),[options])
     const [selected, setSelectionKey] = useState(selectedKey);
     
-    const onSelection = useCallback((optionKey: string)=>{
+    const onSelection = useCallback((optionKey: string)=>{ 
         if(stateful){
             setSelectionKey(optionKey)
         }
         onChange&&onChange(optionKey);
         
-    },[selected, stateful]);
+    },[selected, stateful, onChange]);
 
     selectedKey = stateful? selected: selectedKey;
 

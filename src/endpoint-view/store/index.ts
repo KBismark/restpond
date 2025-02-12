@@ -1,4 +1,4 @@
-import { createDerivedStore, createStore, createStoreHook, createStoreUpdater } from 'statestorejs';
+import { createDerivedStore, createStore, createStoreHook, createStoreUpdater, getStore } from 'statestorejs';
 import { appProvider } from '../../store/global';
 import { SelectorOptions } from '../selector';
 import CacheLocalStorage from '@codigex/cachestorage';
@@ -72,67 +72,92 @@ export const getDefualtEndpointData = ():EndpointData=>({
 });
 
 
-
+export const getEndpointViewStore = () => getStore<EndpointData>(appProvider, storeName);
 createStore<EndpointData>(appProvider, storeName, getDefualtEndpointData());
 
 export const setInitialEndpointData = (file:string, routeName: string, data?: EndpointData) => {
-  updateEndpointViewStore({ actors: ['routeName', 'file'], store: data ? data : { ...getDefualtEndpointData(), file, routeName } }); // No actors to update
+  // updateEndpointViewStoreRequest({actors: ['method', 'bodyType', 'body', 'headers'], store: {} });
+  // updateEndpointViewStoreResponse({ actors: [ 'bodyType', 'body', 'headers', 'status'], store: {} });
+  updateEndpointViewStore({ actors: ['routeName', 'file', 'isActive', 'recentRequest', 'recentResponse', 'request', 'response', 'info'], store: data ? data : { ...getDefualtEndpointData(), file, routeName } }); // No actors to update
 };
 
 export const useEndpointViewStore = createStoreHook<EndpointData>({ provider: appProvider, storeId: storeName });
 
-export const updateEndpointViewStore = createStoreUpdater<EndpointData>({ provider: appProvider, storeId: storeName });
+const updater = createStoreUpdater<EndpointData>({ provider: appProvider, storeId: storeName });
 
-// Create a derived store for request headers
-createDerivedStore<EndpointData>(appProvider, storeName, 'request');
+export const updateEndpointViewStore : (options: {
+    actors?: (keyof EndpointData)[] | undefined;
+    store: Partial<EndpointData>;
+}) => void = (options)=>{
+  updater(options);
+  saveRouteData().catch((err)=>{
+    // TODO: Let user know that the route could not be connected;
 
-// Create a hook to access the derived store
-export const useEndpointViewStoreRequest = createStoreHook<EndpointData, 'request'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'request'
-});
+  })
+}
 
-// Create an updater to update the derived store
-export const updateEndpointViewStoreRequest = createStoreUpdater<EndpointData, 'request'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'request'
-});
+export const saveRouteData = async () => {
+  const routeData = getEndpointViewStore();
+  if (!routeData||!routeData.file) return;
 
-// Create a derived store for response headers
-createDerivedStore<EndpointData>(appProvider, storeName, 'response');
+  // Connect route
+  try {
+    await cachestorage.setItem<EndpointData>(routeData.file, routeData);
+  } catch (error) {
+    throw error;
+  }
+};
 
-// Create a hook to access the derived store
-export const useEndpointViewStoreResponse = createStoreHook<EndpointData, 'response'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'response'
-});
+// // Create a derived store for request headers
+// createDerivedStore<EndpointData>(appProvider, storeName, 'request');
 
-// Create an updater to update the derived store
-export const updateEndpointViewStoreResponse = createStoreUpdater<EndpointData, 'response'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'response'
-});
+// // Create a hook to access the derived store
+// export const useEndpointViewStoreRequest = createStoreHook<EndpointData, 'request'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'request'
+// });
 
-// Create a derived store for store info
-createDerivedStore<EndpointData>(appProvider, storeName, 'info');
+// // Create an updater to update the derived store
+// export const updateEndpointViewStoreRequest = createStoreUpdater<EndpointData, 'request'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'request'
+// });
 
-// Create a hook to access the derived store
-export const useEndpointViewStoreInfo = createStoreHook<EndpointData, 'info'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'info'
-});
+// // Create a derived store for response headers
+// createDerivedStore<EndpointData>(appProvider, storeName, 'response');
 
-// Create an updater to update the derived store
-export const updateEndpointViewStoreInfo = createStoreUpdater<EndpointData, 'info'>({
-  provider: appProvider,
-  storeId: storeName,
-  fieldName: 'info'
-});
+// // Create a hook to access the derived store
+// export const useEndpointViewStoreResponse = createStoreHook<EndpointData, 'response'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'response'
+// });
+
+// // Create an updater to update the derived store
+// export const updateEndpointViewStoreResponse = createStoreUpdater<EndpointData, 'response'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'response'
+// });
+
+// // Create a derived store for store info
+// createDerivedStore<EndpointData>(appProvider, storeName, 'info');
+
+// // Create a hook to access the derived store
+// export const useEndpointViewStoreInfo = createStoreHook<EndpointData, 'info'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'info'
+// });
+
+// // Create an updater to update the derived store
+// export const updateEndpointViewStoreInfo = createStoreUpdater<EndpointData, 'info'>({
+//   provider: appProvider,
+//   storeId: storeName,
+//   fieldName: 'info'
+// });
 
 
 
