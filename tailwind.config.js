@@ -62,7 +62,8 @@ export default withMT({
         'hedvig-f': `"Hedvig Letters Serif", serif`,
         'mono-f': `'Inconsolata', monospace`,
         'serif-f': `'Lora', serif`,
-        'sans-f': `'Inter', sans-serif`
+        'sans-f': `'Inter', sans-serif`,
+        code: `"Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace`
       }
     }
   },
@@ -72,15 +73,6 @@ export default withMT({
       sans: ['Inter', 'ui-sans-serif', 'system-ui']
     }
   },
-  plugins: [
-    require('tailwindcss-animate'),
-    // function ({ addUtilities }) {
-    //   addUtilities({
-    //     '.content-editable': {
-    //       contentEditable: 'true'
-    //     }
-    //   });
-    // }
-  ]
+  plugins: [require('tailwindcss-animate')]
 });
 

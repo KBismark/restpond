@@ -13,7 +13,7 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
   const indent = level * 20;
 
   if (typeof data !== 'object' || data === null) {
-    return <span className="text-green-400 font-mono-f font-normal">{JSON.stringify(data)}<span className='text-[#676464]'>{!isLastProp&&','}</span></span>;
+    return <span className="text-[#512DA8] font--code">{JSON.stringify(data)}<span className='text-[#676464]'>{!isLastProp&&','}</span></span>;
   }
 
   const isArray = Array.isArray(data);
@@ -23,11 +23,11 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
   const bracketType = isArray ? ['[', ']'] : ['{', '}'];
 
   return (
-    <div className={`font-mono-f text-[12px] ml-1 font-normal ${!isExpanded? 'flex items-center':''}`} >
+    <div className={`font-mono-f text-[12px] ml-1 font-[600] ${!isExpanded? 'flex items-center':''}`} >
       <span 
         role='button'
         onClick={() => setIsExpanded(!isExpanded)}
-        className="cursor-pointer inline-flex items-center hover:text-blue-400"
+        className="cursor-pointer inline-flex items-center text-blue-400 hover:text-blue-600"
       >
         {!isEmpty && (
           <span className="mr-[1px]">
@@ -41,7 +41,7 @@ export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp 
         <div className="ml-2">
           {Object.entries(data).map(([key, value], index) => (
             <div key={key} className="flex font-mono-f font-medium">
-              <span className="text-[#79c0ff] ml-1 ">
+              <span className="text-[#c2184a] ml-1 font--code">
                 {isArray ? '' : `"${key}": `}
               </span>
               <JsonView data={value} level={level + 1} isLastProp={index===dataLengthLess1} />
