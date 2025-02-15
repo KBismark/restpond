@@ -14,6 +14,7 @@ import { Button } from "../components/ui/button";
 import { matchRouter, RequestObject, ResponseObject, sendActivatedRouteResponse } from "../helpers/server-app-bridge";
 import { StorageResult } from "@codigex/cachestorage";
 import { IoCog, IoSaveOutline } from "react-icons/io5";
+import { parseResponseBody } from "./utils";
 
 const METHOD_TYPES: SelectorOptions = {
     'GET': true,
@@ -160,26 +161,15 @@ const FileViewContent = (props: { id: string; }) => {
         // Disconnect route
         matchRouter.deactivateRoute(routeName as `/${string}`)
       }else{
-        // const routeData = getStore<EndpointData>(appProvider, storeName);
-        // if(!routeData) return;
-
-        
-        // // Connect route
-        // try {
-        //   await cachestorage.setItem<EndpointData>(endpointName, routeData)
-        // } catch (error) {
-        //   // TODO: Let user know that the route could not be connected
-        //   return;
-        // }
-
         // Register route to receive requests
         matchRouter.registerRoute(routeName as `/${string}`, async (requestData: RequestObject, params)=>{
           let routeItem: StorageResult<EndpointData>;
-          let responseStatus:any = 200;
-
+          const defaultResponseStatus = 200;
+          let responseStatus: keyof typeof responseBody = defaultResponseStatus;
           try {
             routeItem = await cachestorage.getItem<EndpointData>(endpointName||'')
           } catch (error) {
+            
             return sendActivatedRouteResponse({
               request: requestData,
               response: {
@@ -210,12 +200,19 @@ const FileViewContent = (props: { id: string; }) => {
           // const {headers: requestHeaders, method: requestMethod, body: requestBody} = requestData;
           const {query} = params;
 
+          // Use current expected response status
+          responseStatus = responseStatus !== defaultResponseStatus ? responseStatus : status;
+          
+          const bodyString = parseResponseBody(responseBody[responseStatus], params);
+
+          
+
           sendActivatedRouteResponse({
               request: requestData,
               response: {
                 status: responseStatus,
-                body: responseBody[responseStatus as keyof typeof responseBody] as string,
-                responseType: responseBodyType[responseStatus as keyof typeof responseBody].toLowerCase() as 'json' | 'text',
+                body: bodyString,
+                responseType: responseBodyType[responseStatus].toLowerCase() as 'json' | 'text',
                 headers: responseHeaders
               }
             });

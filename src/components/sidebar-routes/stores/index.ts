@@ -40,7 +40,27 @@ export const restoreSideBarRouteStore = async ()=>{
   try {
     const store = await appCachestorage.getItem<SideBarRouteStore>(storeName);
     if(store.data){
-      updateSideBarRouteStore({actors: [], store: store.data})
+      updateSideBarRouteStore({actors: [], store: store.data});
+
+      // TODO: Register all routes on initial page load
+
+      // store.data.projects.forEach(projectNode=>{
+      //   projectNode.children&&projectNode.children.map((node) => {
+      //     if (node.type === 'file') {
+      //       // return cb(node);
+      //     }
+
+      //     // If node has children, recursively search them
+      //     if (node.children?.length) {
+      //       // node.children = actOnProjectRouteItem(node.children, targetId, cb);
+      //       return node;
+      //     }
+
+      //     // Return unchanged node if no match
+      //     return node;
+      //   });
+      // })
+
     }
   } catch (error) { /** No data was found */ }
 }
