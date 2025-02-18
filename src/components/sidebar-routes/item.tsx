@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getSideBarStoreField, updateSideBarRouteStore } from './stores';
 import { actOnProjectRouteItem } from '../../helpers/routes';
 import { router } from '../router';
+import { useNavigate } from 'react-router';
 
 interface TreeItemProps {
   item: TreeNode;
@@ -27,6 +28,7 @@ export const TreeItem: React.FC<TreeItemProps> = ({
   // The exact route name to match whic may include dynamic routes
   routeName
 }) => {
+  const navigate = useNavigate();
   const isFolder = item.type === 'folder';
   const indent = level * 12;
   
@@ -55,7 +57,8 @@ export const TreeItem: React.FC<TreeItemProps> = ({
             updateSideBarRouteStore({store: {selectedItem: updateNode}, actors: ['selectedItem']});
             
             if(!isFolder){
-              router.push({pathname: `/projects/XHt7gdjFJsg5DgsjFgdKFfs/${url.replace(/\//g,'~')}/${routeName.replace(/\//g,'~')}`})
+              // router.push({pathname: `/projects/XHt7gdjFJsg5DgsjFgdKFfs/${url.replace(/\//g,'~')}/${routeName.replace(/\//g,'~')}`})
+              navigate(`/projects/XHt7gdjFJsg5DgsjFgdKFfs/${url.replace(/\//g,'~')}/${routeName.replace(/\//g,'~')}`)
             }
 
             return updateNode

@@ -14,7 +14,7 @@ import { Button } from "../components/ui/button";
 import { matchRouter, RequestObject, ResponseObject, sendActivatedRouteResponse } from "../helpers/server-app-bridge";
 import { StorageResult } from "@codigex/cachestorage";
 import { IoCog, IoSaveOutline } from "react-icons/io5";
-import { parseResponseBody } from "./utils";
+import { convertBodyStringToObject, parseResponseBody } from "./utils";
 
 const METHOD_TYPES: SelectorOptions = {
     'GET': true,
@@ -154,7 +154,7 @@ const FileViewContent = (props: { id: string; }) => {
     }, [])
 
     
-   
+  //  const updateRecentCacheData = ()
 
     const onConnectionButtonClick = useCallback( async ()=>{
       if(isActive){
@@ -167,18 +167,35 @@ const FileViewContent = (props: { id: string; }) => {
           const defaultResponseStatus = 200;
           let responseStatus: keyof typeof responseBody = defaultResponseStatus;
           try {
-            routeItem = await cachestorage.getItem<EndpointData>(endpointName||'')
+            routeItem = await cachestorage.getItem<EndpointData>(endpointName||'');
+           
           } catch (error) {
-            
-            return sendActivatedRouteResponse({
-              request: requestData,
-              response: {
+            const res: ResponseObject['response'] = {
                 status: 500,
-                body: 'Internal Server Error',
+                body: '[Internal Server Error]: Can\'t retrieve route data',
                 responseType: 'text',
                 headers: {}
-              }
-            });
+              };
+
+
+             // Update recent request and response if current route page is active
+                const store = getEndpointViewStore();
+                if(store&&store.file === endpointName){
+                  updateEndpointViewStore({
+                    actors: ['recentRequest', 'recentResponse'],
+                    store: {recentRequest: requestData, recentResponse: res}
+                  });
+                }else{
+                      // Store recent request and response
+                    try {
+                      await cachestorage.updateItem<EndpointData>(endpointName, {recentRequest: requestData, recentResponse: res} );
+                    } catch (error) {}
+                }
+             // Send error response
+              return sendActivatedRouteResponse({
+                request: requestData,
+                response: res
+              });
           }
           
     
@@ -203,23 +220,48 @@ const FileViewContent = (props: { id: string; }) => {
           // Use current expected response status
           responseStatus = responseStatus !== defaultResponseStatus ? responseStatus : status;
           
-          const bodyString = parseResponseBody(responseBody[responseStatus], params);
-
+          let bodyString = parseResponseBody(responseBody[responseStatus], params);
+          let restype = responseBodyType[responseStatus].toLowerCase() as 'json' | 'text';
           
+          if(restype === 'json'){
+            try {
+              bodyString = convertBodyStringToObject(bodyString);
+              
+            } catch (error) {
+              responseStatus = 500;
+              restype = 'text';
+              bodyString = "[Internal Server Error]: Can't parse response body";
+            }
+          }
+           const res: ResponseObject['response'] = {
+              status: responseStatus,
+              body: bodyString,
+              responseType: restype,
+              headers: responseHeaders
+            }
 
-          sendActivatedRouteResponse({
-              request: requestData,
-              response: {
-                status: responseStatus,
-                body: bodyString,
-                responseType: responseBodyType[responseStatus].toLowerCase() as 'json' | 'text',
-                headers: responseHeaders
-              }
+            
+          // Update recent request and response if current route page is active
+          const store = getEndpointViewStore();
+          if(store&&store.file === endpointName){
+            updateEndpointViewStore({
+              actors: ['recentRequest', 'recentResponse'],
+              store: {recentRequest: requestData, recentResponse: res}
             });
+          }
+          // else{
+              // Store recent request and response
+              try {
+                await cachestorage.updateItem<EndpointData>(endpointName, {recentRequest: requestData, recentResponse: res} );
+              } catch (error) {}
+          // }
 
-          
+          // Send mocked response
+          sendActivatedRouteResponse({
+            request: requestData,
+            response: res
+          });
 
-          
         })
       }
       updateEndpointViewStore({
@@ -291,7 +333,7 @@ const FileViewContent = (props: { id: string; }) => {
             }
           </button> */}
 
-          <Button onClick={onConnectionButtonClick} size={'sm'} variant={isActive?'outline':'default'} className="transition-all duration-500 w-28" >
+          <Button onClick={onConnectionButtonClick} size={'sm'} variant={isActive?'destructive':'default'} className={`transition-all duration-500 w-28 ${!isActive&&'bg-blue-500  hover:bg-blue-800'}`} >
             {isActive? 'Disconnect': 'Connect'}
           </Button>
 
@@ -299,12 +341,12 @@ const FileViewContent = (props: { id: string; }) => {
         </div>
       </div>
 
-      <section className="mb-8 w-full rounded-lg border border-gray-100 shadow-sm bg-white py-3 px-4 flex flex-row">
+      <section className="mb-8 w-full rounded-lg border border-gray-100 shadow-sm py-3 px-4 flex flex-row">
         <div>
           <div
-              className="flex items-center justify-center mr-3 w-10 h-10 rounded-full bg-gradient-to-b from-[#FFD3E3] to-[#FFEFF7] -mt-6 -ml-6 "
+              className="flex items-center justify-center mr-3 w-10 h-10 rounded-full bg-gradient-to-b from-[#d3edff] to-[#f9efff] -mt-6 -ml-6 "
           >
-              <Pin size={24} className="text-primary" />
+              <Pin size={24} className="text-blue-800" />
           </div>
         </div>
         <div className="w-full mb-4">
@@ -337,7 +379,7 @@ const FileViewContent = (props: { id: string; }) => {
         </div>
       </section>
 
-      <section className="mb-8 w-full bg-white py-3 px-4">
+      <section className="mb-8 w-full py-3 px-4">
           <div className="w-full mb-4">
               <h3 className="text-lg font-bold mb-1">Request Method</h3>
           </div>
@@ -352,7 +394,7 @@ const FileViewContent = (props: { id: string; }) => {
 
         {
           method === 'POST' &&
-          <section className="mb-8 w-full bg-white py-3 px-4">
+          <section className="mb-8 w-full py-3 px-4">
               <div className="w-full mb-4">
                   <h3 className="text-lg font-bold mb-1">Request Body</h3>
               </div>
@@ -415,7 +457,7 @@ const ResponseStatus = ({routeName}: {routeName: string})=>{
     }, []);
 
     return(
-        <section className="mb-8 w-full bg-white py-3 px-4">
+        <section className="mb-8 w-full py-3 px-4">
             <div className="w-full mb-4">
                 <h3 className="text-lg font-bold mb-1">Response Status</h3>
             </div>
@@ -445,7 +487,7 @@ const ResponseType = ({routeName}: {routeName: string})=>{
     }, []);
 
     return(
-        <section className="mb-8 w-full bg-white py-3 px-4">
+        <section className="mb-8 w-full  py-3 px-4">
             <div className="w-full mb-4">
                 <h3 className="text-lg font-bold mb-1">Response Type</h3>
             </div>
@@ -498,7 +540,7 @@ const ResponseBody = ({routeName}: {routeName: string})=>{
     // if(bodyType[status]!=='JSON') return null;
 
     return(
-        <section className="mb-8 w-full bg-white py-3 px-4">
+        <section className="mb-8 w-full py-3 px-4">
             <div className="w-full mb-4">
                 <h3 className="text-lg font-bold mb-1">Response Body</h3>
             </div>

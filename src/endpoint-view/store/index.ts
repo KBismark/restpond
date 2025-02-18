@@ -78,7 +78,7 @@ createStore<EndpointData>(appProvider, storeName, getDefualtEndpointData());
 export const setInitialEndpointData = (file:string, routeName: string, data?: EndpointData) => {
   // updateEndpointViewStoreRequest({actors: ['method', 'bodyType', 'body', 'headers'], store: {} });
   // updateEndpointViewStoreResponse({ actors: [ 'bodyType', 'body', 'headers', 'status'], store: {} });
-  updateEndpointViewStore({ actors: ['routeName', 'file', 'isActive', 'recentRequest', 'recentResponse', 'request', 'response', 'info'], store: data ? data : { ...getDefualtEndpointData(), file, routeName } }); // No actors to update
+  updateEndpointViewStore({ store: data ? data : { ...getDefualtEndpointData(), file, routeName } }); // No actors to update
 };
 
 export const useEndpointViewStore = createStoreHook<EndpointData>({ provider: appProvider, storeId: storeName });

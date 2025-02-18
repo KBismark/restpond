@@ -16,6 +16,10 @@ import LoginForm from './components/forms/test';
 import { JsonEditor } from './endpoint-view/json-editor';
 import { activateRoute, RequestObject } from './helpers/server-app-bridge';
 import { restoreSideBarRouteStore } from './components/sidebar-routes/stores';
+import { useEndpointViewStore } from './endpoint-view/store';
+import BluryContainer from './components/commons/blury-container';
+import { Route, Routes } from 'react-router';
+import EndpointView from './endpoint-view';
 
 
 function App() {
@@ -73,37 +77,23 @@ function App() {
   if(!ready) return null;
 
   return (
-    <main className={`relative font-serif-f text-sm ${window.Main?'select-none': ''}`}>
+    <main className={`relative font-serif-f bg-blue-100/5 text-sm ${window.Main?'select-none': ''}`}>
       <MainHeader />
-      {/* <SidePanelNavigation /> */}
-      {/* {
-        currentTabLowerCase === 'projects' || currentTabLowerCase === 'endpoints' ? <Sidebar moveToTop={false} /> : <SidePanelNavigation />
-      } */}
        <Sidebar moveToTop={false} />
-      {/* <div className='relative w-full max-w-full flex flex-col items-center justify-center'> */}
-        <ReactAppRouter config={RouterConfig} />
-      {/* </div> */}
+       <Routes >
+          {/* <Route path="/" element={<Dashboard />} />
+          <Route path="/endpoints" element={<EndpointsDashboard />} />
+          <Route path="/login" element={<LoginForm />} /> */}
+          <Route path='/' element={<EndpointView />} />
+          <Route path='/projects/:projectId/:file/:routeName' element={<EndpointView />} />
+       </Routes>
+
+        {/* <ReactAppRouter config={RouterConfig} /> */}
       
       {
-        <div className="lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-blue-100/5 px-6 box-border lgx:mt-16 lgx:pt-2 pt-14 pb-24 ">
-          
-          <div className="mt-6 mb-4">
-              <div className="flex items-center justify-between">
-                <h2  className="text-lg font-semibold">Most Recent Request</h2>
-              </div>
-          </div>
-        
-
-          <JsonEditor />
-
-          <div className="mt-6 mb-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Most Recent Response</h2>
-              </div>
-          </div>
-        
-
-          <JsonEditor />
+        <div className="lg2xl:max-w-[500px] lg2xl:w-full lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-blue-100/5 px-6 box-border lgx:mt-16 lgx:pt-2 pt-14 pb-24 ">
+          <RecentRequest />
+          <RecentResponse />
       </div>
       }
     </main>
@@ -113,6 +103,53 @@ function App() {
 export default App;
 
 
+
+const RecentRequest = ()=> {
+  const {recentRequest} = useEndpointViewStore({watch: ['recentRequest']})!;
+  return (
+    <>
+      <div className="mt-6 mb-4">
+          <div className="flex items-center justify-between">
+            <h2  className="text-lg font-semibold">Most Recent Request</h2>
+          </div>
+      </div>
+      <BluryContainer 
+          outerContainer={{
+            className: 'rounded'
+          }} 
+          innerContainer={{
+            className: 'bg-gray-50 p-2 rounded'
+          }}
+        >
+          {recentRequest? <JsonEditor data={recentRequest} /> : <div className="p-1">No recent request</div>}
+        </BluryContainer> 
+    </>
+  )
+}
+
+const RecentResponse = ()=> {
+  const {recentResponse} = useEndpointViewStore({watch: ['recentResponse']})!;
+
+  return (
+    <>
+      <div className="mt-6 mb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Most Recent Response</h2>
+          </div>
+      </div>
+      <BluryContainer 
+          outerContainer={{
+            className: 'rounded'
+          }} 
+          innerContainer={{
+            className: 'bg-gray-50 p-2 rounded'
+          }}
+        >
+          {recentResponse? <JsonEditor data={recentResponse} /> : <div className="p-1">No recent response</div>}
+        </BluryContainer> 
+    </>
+  )
+}
 
 const APIKey: React.FC = () => {
   return (

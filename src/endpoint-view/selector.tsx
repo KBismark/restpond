@@ -32,7 +32,7 @@ export const Selector = ({options, selectedKey, stateful = true, onChange, class
             <DropdownMenuTrigger asChild>
                 <button 
                     className={
-                        `group rounded-md py-2 px-3 hover:bg-blue-100/15 transition-all duration-500 border border-gray-100 shadow-sm flex flex-row justify-between items-center w-full outline-none cursor-pointer `+
+                        `group rounded-md py-2 px-3 hover:bg-blue-100/15 transition-all duration-500 border border-gray-100 shadow-sm flex flex-row justify-between items-center w-full outline-none cursor-pointer bg-white `+
                         `${className||''}`
                     }
                 >

@@ -2,6 +2,13 @@
 const paramsRegExp = /<:\=[\s]*.*?[\s]*>/gs;
 
 const addScript = (match: string) => `const PARAM = Params, param = Params; return ${match}`;
+export const convertBodyStringToObject = (bodyString: string) => {
+  try {
+    return new Function(`return ${bodyString}`)();
+  } catch (err) {
+    return bodyString;
+  }
+}
 
 export const parseResponseBody = (
   bodyString: string,
@@ -35,9 +42,3 @@ export const parseResponseBody = (
 
   return bodyString;
 };
-
-
-// const g = 
-const f = new Function('a', 'b', 'console.log(a + b);' );
-
-f(45, 6)

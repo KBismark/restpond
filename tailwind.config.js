@@ -6,7 +6,8 @@ export default withMT({
   darkMode: ['class'],
   theme: {
     screens: {
-      lgx: '1180px'
+      lgx: '1180px',
+      lg2xl: '1440px',
     },
     extend: {
       borderRadius: {

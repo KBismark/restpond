@@ -1,4 +1,4 @@
-import { createStore, createStoreHook, createStoreUpdater, getStore } from "statestorejs";
+import { createStore, createStoreHook, createStoreUpdater, deleteStore, getStore } from "statestorejs";
 import { appCachestorage, appProvider } from "../../../store/global";
 import { TreeNode } from "../types";
 import { actOnProjectRouteItem, RouteType } from "../../../helpers/routes";
@@ -7,21 +7,20 @@ import { actOnProjectRouteItem, RouteType } from "../../../helpers/routes";
 
 const storeName = 'sidebar-routes';
 
-createStore<SideBarRouteStore>(appProvider, storeName, {
-    selectedItem: null,
-    contextItem: null,
-    projects: [
-        {
-        id: 'api',
-        name: 'api',
-        type: 'folder',
-        isOpen: true,
-        children: [
-          { id: 'index', name: 'index', type: 'file' }
-        ]
-        }
-    ]
-});
+const defaultData: SideBarRouteStore = {
+  selectedItem: null,
+  contextItem: null,
+  projects: [
+    {
+      id: 'api',
+      name: 'api',
+      type: 'folder',
+      isOpen: true,
+      children: [{ id: 'index', name: 'index', type: 'file' }]
+    }
+  ]
+};
+
 
 export const useSideBarRouteStore = createStoreHook<SideBarRouteStore>({
   provider: appProvider,
@@ -40,7 +39,9 @@ export const restoreSideBarRouteStore = async ()=>{
   try {
     const store = await appCachestorage.getItem<SideBarRouteStore>(storeName);
     if(store.data){
-      updateSideBarRouteStore({actors: [], store: store.data});
+      deleteStore(appProvider, storeName);
+      createStore<SideBarRouteStore>(appProvider, storeName, store.data);
+      // updateSideBarRouteStore({store: store.data});
 
       // TODO: Register all routes on initial page load
 
@@ -62,7 +63,9 @@ export const restoreSideBarRouteStore = async ()=>{
       // })
 
     }
-  } catch (error) { /** No data was found */ }
+  } catch (error) { 
+    createStore<SideBarRouteStore>(appProvider, storeName, defaultData);
+  }
 }
 
 

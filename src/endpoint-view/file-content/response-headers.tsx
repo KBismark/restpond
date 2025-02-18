@@ -92,7 +92,7 @@ export const ResponseHeaders = memo(({routeName}: {routeName: string})=>{
   },[headers]);
 
     return(
-        <section className="mb-8 w-full bg-white py-3 px-4">
+        <section className="mb-8 w-full py-3 px-4">
             <div className="w-full mb-4">
                 <h3 className="text-lg font-bold mb-1">Response Headers</h3>
             </div>
@@ -142,7 +142,7 @@ export const ResponseHeaders = memo(({routeName}: {routeName: string})=>{
             <button 
                 type="button"
                 className={
-                    `mt-11 rounded-md py-2 px-3 border hover:bg-blue-100/15 transition-all duration-500 border-gray-100 shadow-sm flex flex-row justify-center items-center w-full outline-none cursor-pointer `
+                    `mt-11 rounded-md py-2 px-3 border hover:bg-blue-100/15 transition-all duration-500 bg-white border-gray-100 shadow-sm flex flex-row justify-center items-center w-full outline-none cursor-pointer `
                 }
                 onClick={onNewHeaderName}
             >

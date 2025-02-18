@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 
 interface JsonViewProps {
@@ -9,11 +9,24 @@ interface JsonViewProps {
 
 export const JsonView: React.FC<JsonViewProps> = ({ data, level = 0, isLastProp }) => {
   const [isExpanded, setIsExpanded] = useState(level===0);
+  const [flash, setFlash] = useState(false);
+
+  useEffect(()=>{
+    if(data && typeof data !== 'object'){
+
+      setFlash(true);
+      const timeout = setTimeout(()=>{
+        setFlash(false);
+      }, 800);
+
+      return ()=>clearTimeout(timeout);
+    }
+  },[data])
   // const isExpanded = true
   const indent = level * 20;
 
   if (typeof data !== 'object' || data === null) {
-    return <span className="text-[#512DA8] font--code">{JSON.stringify(data)}<span className='text-[#676464]'>{!isLastProp&&','}</span></span>;
+    return <span className={`${flash&&'flash-bg'} text-[#512DA8] font--code`}>{JSON.stringify(data)}<span className='text-[#676464]'>{!isLastProp&&','}</span></span>;
   }
 
   const isArray = Array.isArray(data);

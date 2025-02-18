@@ -10,6 +10,7 @@ import { Input } from '@headlessui/react';
 import { useCallback, useRef, useState } from 'react';
 import ActionBar from '../commons/action-tabs';
 import { getRouteNames, RouteType } from '../../helpers/routes';
+import { Button } from '../ui/button';
 
 interface TreeActionsProps {
   onCreateFile?: (fileData: RouteType[]) => void;
@@ -72,7 +73,22 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
 
   return (
     <DropdownMenu open={isOpened} onOpenChange={close}>
-      <ActionBar onClose={onCloseButtonAtTopClicked}>
+      <ActionBar 
+        onClose={undefined}
+        renderInPlaceOfClose={
+          <div className="flex flex-row items-center gap-2">
+            <Button onClick={undefined} size={'sm'} variant={'outline'} className="transition-all duration-500 w-full h-7 text-[12px]" >
+              Import
+            </Button>
+
+            <Button onClick={undefined} size={'sm'} variant={'default'} className="transition-all duration-500 w-full h-7 bg-blue-500  hover:bg-blue-800 text-[12px] " >
+              Export
+            </Button>
+
+          
+        </div>
+        }
+      >
         <div>
             <DropdownMenuTrigger></DropdownMenuTrigger>
             { 

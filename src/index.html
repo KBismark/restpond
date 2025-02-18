@@ -65,6 +65,21 @@
       button{
         outline: none;
       }
+
+
+      .flash-bg{
+        animation: bg-color-flash 0.5s ease-in-out;
+        border-radius: 6px;
+      }
+
+      @keyframes bg-color-flash {
+        from {
+          background-color: rgba(245, 33, 104, 0.4);
+        }
+        to {
+          background-color: rgb(255, 10, 92, 0.2);
+        }
+      }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif:opsz@12..24&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">

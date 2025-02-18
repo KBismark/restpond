@@ -4,7 +4,7 @@ import { join } from 'path';
 
 // Packages
 import { BrowserWindow, app, ipcMain, IpcMainEvent, nativeTheme } from 'electron';
-import {  RequestObject, responseHandler, ResponseObject, ServerResponseObjects } from './server/electron-server-events';
+import {  RequestObject,  ResponseObject, ServerResponseObjects } from './server/electron-server-events';
 // import { server, SERVER_PORT } from './server';
 import http, { ServerResponse } from 'http';
 // import isDev from 'electron-is-dev';
@@ -22,6 +22,8 @@ const getElectronEventsAPI = (window: BrowserWindow) => {
     },
     activateRoute: (data: RequestObject, responseObject: ServerResponseObjects) => {
       if (window.isDestroyed()) {
+        responseObject.statusCode = 500;
+        responseObject.end('Internal Server Error');
         return;
       }
 
@@ -77,7 +79,7 @@ const getElectronEventsAPI = (window: BrowserWindow) => {
         !contentTypeSet && res.setHeader('Content-Type', 'application/json');
 
         // send response as json
-        res.end(data.response.body);
+        res.end(JSON.stringify(data.response.body));
       }
     }
   };
@@ -213,9 +215,8 @@ async function createWindow() {
 
   // Send data to server
   ipcMain.on('activated-route-response', (event: IpcMainEvent, data: ResponseObject) => {
-    console.log('activated-route-response', data);
-    console.log(typeof data);
     
+    // Send the response in electron main process
     electronEventsAPI.responseHandler(data);
   });
 }

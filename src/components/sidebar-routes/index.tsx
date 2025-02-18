@@ -43,7 +43,7 @@ export default function Sidebar({ moveToTop }: { moveToTop?: boolean }) {
   return (
     <div className={'sm:mt-16 sm:pt-2 z-20 lg:w-56 flex flex-col sm:fixed top-0 left-0 bottom-0 bg-white transition-all border-r border-r-gray-100 shadow-sm'}>
 
-      <SearchBar onSearch={handleSearch} />
+      {/* <SearchBar onSearch={handleSearch} /> */}
 
       <div className="flex-1 overflow-auto">
           <FolderTree

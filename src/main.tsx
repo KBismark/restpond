@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import {configureForReact} from 'statestorejs'
 import { useAppStore } from './services/app.service'
+import { BrowserRouter } from 'react-router';
 
 configureForReact(React);
 
@@ -35,6 +36,8 @@ const AppWithTheme = ()=>{
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppWithTheme/>
+    <BrowserRouter>
+      <AppWithTheme/>
+    </BrowserRouter>
   </StrictMode>,
 )
