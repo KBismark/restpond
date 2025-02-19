@@ -74,7 +74,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
   return (
     <DropdownMenu open={isOpened} onOpenChange={close}>
       <ActionBar 
-        onClose={undefined}
+        onClose={onCloseButtonAtTopClicked}
         renderInPlaceOfClose={
           <div className="flex flex-row items-center gap-2">
             <Button onClick={undefined} size={'sm'} variant={'outline'} className="transition-all duration-500 w-full h-7 text-[12px]" >
