@@ -163,7 +163,9 @@ async function createWindow() {
     resizable: true,
     fullscreenable: true,
     webPreferences: {
-      preload: join(__dirname, 'preload.js')
+      preload: join(__dirname, 'preload.js'),
+      // nodeIntegration: true,
+      // contextIsolation: false,
     }
   });
   

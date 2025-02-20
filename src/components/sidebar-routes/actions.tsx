@@ -81,7 +81,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
               Import
             </Button>
 
-            <Button onClick={undefined} size={'sm'} variant={'default'} className="transition-all duration-500 w-full h-7 bg-blue-500  hover:bg-blue-800 text-[12px] " >
+            <Button onClick={undefined} size={'sm'} variant={'default'} className="transition-all duration-500 w-full h-7 bg-blue-500 active:bg-blue-gray-300  hover:bg-blue-700 text-[12px] " >
               Export
             </Button>
 
