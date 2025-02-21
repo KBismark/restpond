@@ -9,6 +9,11 @@ export const cachestorage = new CacheLocalStorage({
   cacheDuration: 60 * 60 * 24 * 365,
 });
 
+export const projectsCacheStorage = new CacheLocalStorage({
+  namespace: 'new-projects-endpoint-view',
+  // 1 year cache duration in seconds
+  cacheDuration: 60 * 60 * 24 * 365,
+});
 
 export const storeName = 'endpoint-view';
 

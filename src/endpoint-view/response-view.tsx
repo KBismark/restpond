@@ -6,6 +6,10 @@ import BluryContainer from '../components/commons/blury-container';
 import { Selector } from './selector';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { generateContentAsJSON } from './utils/ai-response-generator';
+import ResponseHeaderSetting from './set-hearders';
+import { APIModel, EndpointViewSettings, ResponseStatus } from './types';
+import { projectsCacheStorage } from './store';
+import { defaultResponseRouteValues, defaultRouteModel, requestMethods, responseStatuses } from './utils/model';
 
 interface TabItemProps {
   label: string;
@@ -20,8 +24,10 @@ const TabItem = ({ label, count }: TabItemProps) => (
   </div>
 );
 
-type ResponseStatus = '200' | '201' | '203' | '301' | '302' | '401' | '403' | '404' | '500';
-const responseStatuses: ResponseStatus[] = ['200', '201', '203', '301', '302', '401', '403', '404', '500'];
+
+
+
+
 const dropdownSpecificItemClassName: {[k in ResponseStatus]: string} = {
   '200': 'text-[#2fbe76]',
   '201': 'text-[#2fbe76]',
@@ -34,20 +40,30 @@ const dropdownSpecificItemClassName: {[k in ResponseStatus]: string} = {
   '500': 'text-[#e87e1a]',
 }
 
-const ResponseView = () => {
-  const responseData = ["John", "James", "Emmanuel", "kbis"];
-  const [selectedStatus, setSelectedStatus] = useState<ResponseStatus>('200');
-  const [responseBodyText, setResponseBody] = useState<string>('Paste response body here...');
-  const [waitingAiResponse, setWaitingAiResponse] = useState<boolean>(false);
-  const aiPromptRef = useRef<HTMLTextAreaElement>(null);
 
+type ResponseViewProps = {
+  serverEndpoint: string, 
+  apiData: APIModel['apis'][string]|null, 
+  settings: EndpointViewSettings;
+  updateSettings?: (settings: EndpointViewSettings)=>void; 
+};
+
+const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: ResponseViewProps) => {
+
+  const selectedStatus = settings.status;
+  const selectedMethod = settings.method;
+  // alert(`selectedStatus: ${selectedStatus} and method: ${settings.method}`);
+  
+  // const [selectedStatus, setSelectedStatus] = useState<ResponseStatus>(200);
+  const [responseBodyText, setResponseBody] = useState<string>(apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...');
+  const [waitingAiResponse, setWaitingAiResponse] = useState<boolean>(false);
+  const [showAPIKey, setShowAPIKey] = useState<boolean>(true);
+  const aiPromptRef = useRef<HTMLTextAreaElement>(null);
   const responseBodyRef = useRef<HTMLPreElement>(null);
-  // useEffect(()=>{
-  //   const responseBody = responseBodyRef.current as unknown as HTMLPreElement|null
-  //   if(responseBody){
-  //     responseBody.contentEditable = 'true';
-  //   }
-  // })
+
+  useEffect(()=>{
+
+  },[serverEndpoint]);
   
   useEffect(() => {
 
@@ -77,29 +93,43 @@ const ResponseView = () => {
 
   }, [responseBodyRef.current]);
 
-  const onStatusChange = useCallback((status: string) => {
-    selectedStatus!==status && setSelectedStatus(status as ResponseStatus);
-  }, [selectedStatus]);
+
+  const onStatusChange = useCallback((status: number|string) => {
+    updateSettings&&updateSettings({...settings, status: status as ResponseStatus});
+  }, [settings]);
+
+  const onShowAPIKey = useCallback(()=>{
+    setShowAPIKey(!showAPIKey);
+  }, [showAPIKey]);
 
   const onSend = useCallback(async () => {
+
     if(!aiPromptRef.current||waitingAiResponse) return;
+
     const value = aiPromptRef.current.value.trim();
     if(!value) return;
+
     setWaitingAiResponse(true);
     const response = await generateContentAsJSON(value);
     setWaitingAiResponse(false);
+
     if(response.errored){
       alert('Error generating response');
       return;
     }
+
     aiPromptRef.current.value = '';
+
     const responseBody = responseBodyRef.current as unknown as HTMLPreElement|null;
     if(responseBody){
-      responseBody.innerText = (response as any).response.trim()||'Couldn\'t fill wit AI';
-      setResponseBody((response as any).response.trim()||'Couldn\'t fill wit AI');
-      // ?JSON.stringify((response as any).response, null, 2) : 'Couldn\'t fill wit AI';
+      responseBody.innerText = (response as any).response.trim()||'Couldn\'t generate with response';
+      setResponseBody((response as any).response.trim()||'Couldn\'t generate with response');
     }
+
   }, [selectedStatus, aiPromptRef.current, responseBodyRef.current, waitingAiResponse]);
+
+
+  if(!apiData) return null;
 
   return (
     <div className="w-full mt-6">
@@ -107,14 +137,14 @@ const ResponseView = () => {
         <div className="border-b border-gray-200 mb-4 mx-2 flex items-center justify-between">
           <TabsList className="flex items-center gap-4 px-2">
             <TabItem label="Body" />
-            <TabItem label="Cookies" />
             <TabItem label="Headers" count={5} />
+            <TabItem label="Cookies" />
           </TabsList>
           <div className='flex items-center gap-4'>
              <Selector 
                 stateful={false}
-                options={responseStatuses}
-                selectedKey={selectedStatus}
+                options={responseStatuses as unknown as string[]}
+                selectedKey={selectedStatus as unknown as string}
                 onChange={onStatusChange}
                 className='h-8 shadow-none border-none'
                 dropdownMenuClassName='w-6'
@@ -140,32 +170,6 @@ const ResponseView = () => {
         </div>
 
         <TabsContent value="body" className="p-0 bg-white ">
-          <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200 hidden">
-            <div className="flex items-center gap-2 relative">
-              <Selector 
-                options={['JSON', 'TEXT',]}
-                selectedKey='TEXT'
-                className='h-8'
-              />
-              {/* <Button variant="ghost" size="sm" className="text-sm text-gray-600">
-                Preview
-              </Button> */}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-2 py-1 bg-green-50 text-green-600 rounded">
-                <span className="text-sm">200 OK</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Clock size={14} />
-                <span>33 ms</span>
-              </div>
-              <span className="text-sm text-gray-600">189 B</span>
-              <Button variant="ghost" size="sm" className="p-1">
-                <MoreHorizontal size={16} />
-              </Button>
-            </div>
-          </div>
 
             <BluryContainer
                 outerContainer={{
@@ -210,13 +214,28 @@ const ResponseView = () => {
                 </SyntaxHighlighter> */}
               </div>
               <div className='flex flex-col items-center mt-4 bg-white px-2 py-1 rounded-md max-h-40'>
-                    <textarea ref={aiPromptRef} className="w-[calc(100%-32px)] mb-1 pt-1 outline-none text-[12px] font--code resize-none max-h-60" placeholder='Fill with Gemini AI' ></textarea>
+                    <textarea disabled={waitingAiResponse} ref={aiPromptRef} className="w-[calc(100%-32px)] mb-1 pt-1 outline-none text-[12px] font--code resize-none max-h-60" placeholder='Generate a sample user posts' ></textarea>
                     <div className='flex items-center justify-between gap-2 w-full'>
-                        <Button variant="ghost" size="sm" className="text-sm text-gray-600 rounded-full flex items-center justify-center w-7 h-7">
-                        <Settings2 size={16} className="" />
-                      </Button>
-                        
-                    
+                      <div className='flex items-center justify-start gap-2 w-full'>
+                        <Button onClick={onShowAPIKey} title={showAPIKey? 'Hide API key' : 'Set API key'} variant='ghost' size="sm" 
+                         className={
+                          "text-sm text-gray-600 rounded-full flex items-center justify-center w-7 h-7 transition-all duration-300 " + 
+                          (showAPIKey ? '' : 'bg-gray-100')
+                         }
+                         style={{transform: showAPIKey ? 'rotate(0deg)' : 'rotate(90deg)'}}
+                        >
+                          <Settings2 size={16} />
+                        </Button>
+                          
+                        <input placeholder='Paste Gemini API key here'
+                          className={
+                            'transition-all duration-300 rounded-sm bg-gray-100 py-[1px] px-2 outline-none text-[12px] font--code ' + 
+                            (showAPIKey ? 'w-[calc(100%-32px)]' : 'w-0 invisible') 
+                          } 
+                        />
+                      </div>
+                      
+                     
                       <Button onClick={onSend} size={'sm'} variant={'default'} className="flex justify-center items-center transition-all duration-500 w-14 h-7 bg-blue-500 active:bg-blue-gray-300  hover:bg-blue-700 text-[12px]" >
                         {
                           !waitingAiResponse ?
@@ -231,6 +250,9 @@ const ResponseView = () => {
           {/* <div className="p-4 font-mono text-sm bg-red-200">
             
           </div> */}
+        </TabsContent>
+        <TabsContent value="headers" className="p-0 bg-white ">
+            <ResponseHeaderSetting />
         </TabsContent>
       </Tabs>
     </div>

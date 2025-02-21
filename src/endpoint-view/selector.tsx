@@ -5,9 +5,9 @@ import BluryContainer from "../components/commons/blury-container";
 
 export type SelectorOptions = {[k: string]: boolean;}
 export interface SelectorProps{
-    onChange?: (selectedKey: string)=>void;
-    options: string[];
-    selectedKey?: string;
+    onChange?: (selectedKey: string | number) => void;
+    options: string[]|number[];
+    selectedKey?: string|number;
     /** Set to true to make selector matains it own state. Default true */
     stateful?: boolean
     align?: "center" | "end" | "start" | undefined
@@ -28,7 +28,7 @@ export const Selector = ({options, selectedKey, align, stateful = true, onChange
     // const optionKeys = useMemo(()=>Object.keys(options),[options])
     const [selected, setSelectionKey] = useState(selectedKey);
     
-    const onSelection = useCallback((optionKey: string)=>{ 
+    const onSelection = useCallback((optionKey: string|number)=>{ 
         if(stateful){
             setSelectionKey(optionKey)
         }

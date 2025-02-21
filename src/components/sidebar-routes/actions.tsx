@@ -77,7 +77,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
         onClose={onCloseButtonAtTopClicked}
         renderInPlaceOfClose={
           <div className="flex flex-row items-center gap-2">
-            <Button onClick={undefined} size={'sm'} variant={'outline'} className="transition-all duration-500 w-full h-7 text-[12px]" >
+            <Button onClick={undefined} size={'sm'} variant={'outline'} className="transition-all text-blue-500 hover:text-blue-600 hover:bg-[#2f9dbe09] duration-500 w-full h-7 text-[12px]" >
               Import
             </Button>
 
