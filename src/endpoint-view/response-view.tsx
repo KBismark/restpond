@@ -7,7 +7,7 @@ import { Selector } from './selector';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { generateContentAsJSON } from './utils/ai-response-generator';
 import ResponseHeaderSetting from './set-hearders';
-import { APIModel, EndpointViewSettings, ResponseStatus } from './types';
+import { APIModel, EndpointViewSettings, ResponseStatus, RouteDataType } from './types';
 import { projectsCacheStorage } from './store';
 import { defaultResponseRouteValues, defaultRouteModel, requestMethods, responseStatuses } from './utils/model';
 
@@ -43,27 +43,27 @@ const dropdownSpecificItemClassName: {[k in ResponseStatus]: string} = {
 
 type ResponseViewProps = {
   serverEndpoint: string, 
-  apiData: APIModel['apis'][string]|null, 
+  apiData: RouteDataType|null, 
   settings: EndpointViewSettings;
-  updateSettings?: (settings: EndpointViewSettings)=>void; 
+  updateSettings: (settings: EndpointViewSettings)=>void; 
+  updateRouteStatusData: <T extends keyof RouteDataType["GET"]["200"]>(key: T, value: RouteDataType["GET"]["200"][T]) => void
 };
 
-const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: ResponseViewProps) => {
+const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings, updateSettings}: ResponseViewProps) => {
 
   const selectedStatus = settings.status;
   const selectedMethod = settings.method;
+  const responseBodyText = apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...';
+  const responseType = apiData? apiData[selectedMethod][selectedStatus].responseType : 'text';
   // alert(`selectedStatus: ${selectedStatus} and method: ${settings.method}`);
   
   // const [selectedStatus, setSelectedStatus] = useState<ResponseStatus>(200);
-  const [responseBodyText, setResponseBody] = useState<string>(apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...');
+  // const [responseBodyText, setResponseBody] = useState<string>(apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...');
   const [waitingAiResponse, setWaitingAiResponse] = useState<boolean>(false);
   const [showAPIKey, setShowAPIKey] = useState<boolean>(true);
   const aiPromptRef = useRef<HTMLTextAreaElement>(null);
   const responseBodyRef = useRef<HTMLPreElement>(null);
-
-  useEffect(()=>{
-
-  },[serverEndpoint]);
+  
   
   useEffect(() => {
 
@@ -81,8 +81,8 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
               //   });
               // }
               responseBody.innerText = value;
-              setResponseBody(value);
-              
+              // setResponseBody(value);
+              updateRouteStatusData('body', value);
           }
           responseBody.addEventListener('blur', onBlur,false);
 
@@ -95,7 +95,11 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
 
 
   const onStatusChange = useCallback((status: number|string) => {
-    updateSettings&&updateSettings({...settings, status: status as ResponseStatus});
+    updateSettings({...settings, status: status as ResponseStatus});
+  }, [settings]);
+
+  const onTypeChange = useCallback((type: number|string) => {
+    updateRouteStatusData('responseType', String(type).toLowerCase() as 'json'|'text');
   }, [settings]);
 
   const onShowAPIKey = useCallback(()=>{
@@ -123,7 +127,8 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
     const responseBody = responseBodyRef.current as unknown as HTMLPreElement|null;
     if(responseBody){
       responseBody.innerText = (response as any).response.trim()||'Couldn\'t generate with response';
-      setResponseBody((response as any).response.trim()||'Couldn\'t generate with response');
+      // setResponseBody((response as any).response.trim()||'Couldn\'t generate with response');
+      updateRouteStatusData('body', (response as any).response.trim()||'Couldn\'t generate with response');
     }
 
   }, [selectedStatus, aiPromptRef.current, responseBodyRef.current, waitingAiResponse]);
@@ -131,13 +136,15 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
 
   if(!apiData) return null;
 
+  const apiResponseHeaders = apiData[selectedMethod][selectedStatus].headers;
+
   return (
     <div className="w-full mt-6">
       <Tabs defaultValue="body" className="w-full">
         <div className="border-b border-gray-200 mb-4 mx-2 flex items-center justify-between">
           <TabsList className="flex items-center gap-4 px-2">
             <TabItem label="Body" />
-            <TabItem label="Headers" count={5} />
+            <TabItem label="Headers" count={apiResponseHeaders.length} />
             <TabItem label="Cookies" />
           </TabsList>
           <div className='flex items-center gap-4'>
@@ -157,13 +164,15 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
                 }
               />
               <Selector 
+                stateful={false}
                 options={['JSON', 'TEXT',]}
-                selectedKey='TEXT'
+                onChange={onTypeChange}
+                selectedKey={responseType.toUpperCase()}
                 className='h-8 border-none'
                 selectedKeyTextClassName='text-[12px] font-bold'
                 dropdownMenuClassName='w-6'
                 dropdownClassName='bg-white'
-                dropdownItemClassName='font-bold'
+                dropdownItemClassName='font-bold font--code'
                 dropdownItemContainerClassName='focus:bg-blue-100/10 hover:bg-blue-100/10'
               />
           </div>
@@ -252,7 +261,7 @@ const ResponseView = ({serverEndpoint, apiData, settings, updateSettings}: Respo
           </div> */}
         </TabsContent>
         <TabsContent value="headers" className="p-0 bg-white ">
-            <ResponseHeaderSetting />
+            <ResponseHeaderSetting apiHeaders={apiResponseHeaders} updateRouteStatusData={updateRouteStatusData} />
         </TabsContent>
       </Tabs>
     </div>

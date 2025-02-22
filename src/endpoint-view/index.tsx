@@ -5,10 +5,13 @@ import { data, useParams } from 'react-router';
 import ResponseView from './response-view';
 import { Selector } from './selector';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
-import { G } from 'react-router/dist/development/fog-of-war-CCAcUMgB';
-import { APIModel, EndpointViewSettings, RequestMethod, RequestMethodColor, ResponseStatus } from './types';
-import { defaultResponseRouteValues, requestMethodColors, requestMethods } from './utils/model';
+import { APIModel, EndpointViewSettings, Header, RequestMethod, RequestMethodColor, RequestObject, ResponseObject, ResponseStatus, RouteDataType } from './types';
+import { createEndpointConnection, defaultResponseRouteValues, getAPIconnection, requestMethodColors, requestMethods, setAPIconnection } from './utils/model';
 import { projectsCacheStorage } from './store';
+import { get } from 'http';
+import { MatchRouter } from '../helpers/router-claude-optimize';
+import { StorageResult } from '@codigex/cachestorage';
+import { matchRouter, sendActivatedRouteResponse } from '../helpers/server-app-bridge';
 
 const EndpointViewOldVersion = () => {
     const {file, id, routeName} = useParams<{id: string, file?: string, routeName: string}>()
@@ -40,12 +43,10 @@ const EndpointViewOldVersion = () => {
 };
 
 
-type RouteDataType = APIModel['apis'][string];
-
 const EndpointView = ()=> {
     const {file, id, routeName} = useParams<{id: string, file?: string, routeName: string}>();
     const [apiData, setApiData] = useState<RouteDataType|null>(null);
-    const [settings, setSettings] = useState<EndpointViewSettings>({status: 200, method: 'GET'});
+    const [settings, setSettings] = useState<EndpointViewSettings>({status: 200, method: 'GET', connection: null});
 
 
     const resolvedFileName = (file||'').replace(/~/g,'/').replace(/\/index$/g,'');
@@ -55,15 +56,31 @@ const EndpointView = ()=> {
       fetchResponse(resolvedRouteName);
     },[resolvedRouteName]);
 
+
+    function updater<T extends keyof RouteDataType['GET']['200']>(key: T, value: RouteDataType['GET']['200'][T]){
+      setApiData((prev: RouteDataType|null)=>{
+        if(prev){
+          prev[settings.method][settings.status][key] = value;
+          const newData = {...prev};
+          projectsCacheStorage.updateItem<RouteDataType>(resolvedRouteName, newData);
+          return  newData;
+        }
+        return prev;
+      });
+    }
+
+    const updateRouteStatusData = useCallback(updater,[settings.method, settings.status]);
+
+
     const fetchResponse = useCallback(async (endpoint: string) => {
       // Get response from cache
       let cachedResponse = await projectsCacheStorage.getItem<RouteDataType>(endpoint);
       if(!cachedResponse.data){
-        cachedResponse = await projectsCacheStorage.setItem<RouteDataType>(endpoint, defaultResponseRouteValues);
+        cachedResponse = await projectsCacheStorage.setItem<RouteDataType>(endpoint, defaultResponseRouteValues());
       }
       if(cachedResponse.data){
         setApiData(cachedResponse.data);
-        setSettings({status: 200, method: 'GET'});
+        setSettings({status: 200, method: 'GET', connection: getAPIconnection(endpoint)});
       }else{
         setApiData(null); // No data - Shouldn't happen anyway
       }
@@ -80,8 +97,8 @@ const EndpointView = ()=> {
             {
               routeName&&file&& 
               <>
-                <ViewTitleOptions settings={settings} updateSettings={setSettings} apiData={apiData} title={resolvedFileName} serverEndpoint={resolvedRouteName} />
-                <ResponseView settings={settings} updateSettings={setSettings} serverEndpoint={resolvedRouteName} apiData={apiData} />
+                <ViewTitleOptions settings={settings} updateSettings={setSettings} title={resolvedFileName} serverEndpoint={resolvedRouteName} />
+                <ResponseView settings={settings} updateSettings={setSettings} serverEndpoint={resolvedRouteName} apiData={apiData} updateRouteStatusData={updateRouteStatusData} />
               </>
             }
 
@@ -99,6 +116,8 @@ const EndpointView = ()=> {
 
 
 export default EndpointView;
+
+
 
 
 
@@ -137,27 +156,53 @@ const viewTitleDynamicStyles = {
 type ViewTitleOptionsProps = {
   title: string, 
   serverEndpoint: string, 
-  onConnect?: ()=>void
-  apiData: RouteDataType|null
+  // apiData: RouteDataType|null
   settings: EndpointViewSettings;
-  updateSettings?:  Dispatch<SetStateAction<EndpointViewSettings>>;
+  updateSettings:  Dispatch<SetStateAction<EndpointViewSettings>>;
+  // updateRouteStatusData: <T extends keyof RouteDataType["GET"]["200"]>(key: T, value: RouteDataType["GET"]["200"][T]) => void
 };
-const ViewTitleOptions = ({title, apiData, settings, updateSettings, serverEndpoint, onConnect}: ViewTitleOptionsProps) => {
+
+const ViewTitleOptions = ({title, settings, updateSettings, serverEndpoint}: ViewTitleOptionsProps) => {
   // const [selectedMethod, setSelectedMethod] = useState<RequestMethod>('GET');
   const selectedMethod = settings.method;
+  const selectedStatus = settings.status;
+  const connection = settings.connection;
   // alert(selectedMethod)
   // alert(settings.status)
 
-  if(!apiData) return null;
+  // if(!apiData) return null;
 
-  const isConnected = apiData[selectedMethod][200].connected;
+  
+  const isConnected = !connection? false : selectedMethod === connection.method && selectedStatus === connection.status;
 
   const onMethodChange = (method: string|number) => {
     
     // method!==selectedMethod&&setSelectedMethod(method as RequestMethod);
-    updateSettings&&updateSettings((prev: EndpointViewSettings)=>{
+    updateSettings((prev: EndpointViewSettings)=>{
       return {...prev, method: method as RequestMethod}
     });
+  }
+// apiData[selectedMethod][selectedStatus].connected;
+  const onConnect = () => {
+    if(isConnected){
+      // Disconnect
+      setAPIconnection(serverEndpoint, null);
+      updateSettings((prev: EndpointViewSettings)=>{
+        return {...prev, connection: null}
+      });
+      matchRouter.deactivateRoute(serverEndpoint as `/${string}`);
+      return;
+    }
+
+    const config = {method: selectedMethod, status: selectedStatus};
+    setAPIconnection(serverEndpoint, config);
+
+    updateSettings((prev: EndpointViewSettings)=>{
+      return {...prev, connection: config}
+    });
+
+    createEndpointConnection(serverEndpoint);
+   
   }
   
   return (
@@ -191,7 +236,7 @@ const ViewTitleOptions = ({title, apiData, settings, updateSettings, serverEndpo
           />
           <input title={title} type="text" className="w-full mx-4 pr-3 h-7 outline-none text-[12px] font--code truncate " value={title} />
        </div>
-        <Button onClick={undefined} size={'sm'} variant={'default'} 
+        <Button onClick={onConnect} size={'sm'} variant={'default'} 
           className={
             !isConnected ?
             'transition-colors duration-500 px-5 h-8 bg-blue-500 active:bg-blue-300  hover:bg-blue-700'

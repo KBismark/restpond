@@ -32,7 +32,7 @@ export default memo(function MainHeader(){
                     {/* <div aria-hidden={true} className='flex items-center flex-col justify-center'> */}
                         <IconWebhook width={36} height={36} />
                     {/* </div> */}
-                    <div className="text-zinc-900 font-hedvig-f text-[1.8rem] ml-2 font-extrabold text-white ">RESTponse</div>
+                    <div className="text-zinc-900 font-hedvig-f text-[1.8rem] ml-2 font-extrabold text-white ">RESTpond</div>
                 </div>
 
                 {/* <SidePanelNavigation moveToTop={true} /> */}

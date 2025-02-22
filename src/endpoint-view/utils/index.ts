@@ -42,3 +42,9 @@ export const parseResponseBody = (
 
   return bodyString;
 };
+
+export const getUniqueID = () => {
+  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+

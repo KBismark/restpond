@@ -1,80 +1,114 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox } from '../components/ui/checkbox';
 import { Button } from '../components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import { getAllHeaderNames, getHeaderValues } from './utils/header-names-values';
+import { get } from 'http';
+import { f } from 'react-router/dist/development/fog-of-war-CCAcUMgB';
+import { getUniqueID } from './utils';
+import { Header, RouteDataType } from './types';
 
-interface Header {
-  id: string;
-  key: string;
-  value: string;
-  enabled: boolean;
+
+interface Props{
+  apiHeaders: Header[];
+   updateRouteStatusData: <T extends keyof RouteDataType["GET"]["200"]>(key: T, value: RouteDataType["GET"]["200"][T]) => void
 }
 
-const COMMON_HEADERS = [
-  'Content-Type',
-  'X-Requested-With',
-  'X-Do-Not-Track',
-  'Max-Forwards',
-  'x-api-key'
-];
+type ValueId = {keyId: string, valueId: string} ;
 
-const ResponseHeaderSetting = () => {
-  const [headers, setHeaders] = useState<Header[]>([
-    {
-      id: '1',
-      key: 'Content-Type',
-      value: 'application/json',
-      enabled: true
-    },
-    {
-      id: '2',
-      key: 'X-|',
-      value: '',
-      enabled: true
-    }
-  ]);
+const COMMON_HEADERS = getAllHeaderNames();
 
-  const [showHeaderSuggestions, setShowHeaderSuggestions] = useState(false);
-  const [currentFocus, setCurrentFocus] = useState<string | null>(null);
+const convertApiHeaders = (apiHeaders: {[k:string]: string}): Header[] => {
+  return Object.keys(apiHeaders).map((key, index) => ({
+    id: getUniqueID(),
+    key,
+    value: apiHeaders[key],
+    enabled: false
+  }));
+}
 
-  const handleHeaderChange = (id: string, field: 'key' | 'value', value: string) => {
-    setHeaders(headers.map(header => 
+
+
+const getValueInputId = (id: string) => {
+  return {
+    keyId: id,
+    valueId: `${id}_value`
+  }
+};
+
+
+const ResponseHeaderSetting = ({apiHeaders, updateRouteStatusData}: Props) => {
+  const [headers, setHeaders] = useState<Header[]>(apiHeaders);
+  // const headers = apiHeaders;
+  const [ showHeaderSuggestions, setShowHeaderSuggestions] = useState(false);
+  const [currentFocus, setCurrentFocus] = useState< string | ValueId | null>(null);
+  const isValueId = currentFocus && typeof currentFocus !=='string';
+  const timeout_1 = useRef<any>(undefined);
+
+  useEffect(()=>{
+
+    return ()=>clearTimeout(timeout_1.current);
+  });
+
+  const handleHeaderChange = (id: string, field: 'key' | 'value', value: string, isSuggestion?: boolean) => {
+    const newHeaders = headers.map(header =>
       header.id === id ? { ...header, [field]: value } : header
-    ));
+    );
+    setHeaders(newHeaders);
+
+    // Change event is fired continuously when typing in input field
+    // So, we only update the parent component state when it's a suggestion
+    isSuggestion && updateRouteStatusData('headers', newHeaders);
   };
 
-  const handleCheckboxChange = (id: string) => {
-    setHeaders(headers.map(header =>
-      header.id === id ? { ...header, enabled: !header.enabled } : header
-    ));
+  const handleRemoveHeader = (id: string) => {
+    const newHeaders = headers.filter(header => header.id !== id);
+    setHeaders(newHeaders);
+    updateRouteStatusData('headers', newHeaders);
   };
+
+  // const handleCheckboxChange = (id: string) => {
+  //   setHeaders(headers.map(header =>
+  //     header.id === id ? { ...header, enabled: !header.enabled } : header
+  //   ));
+  // };
 
   const addNewHeader = () => {
     const newHeader: Header = {
-      id: Date.now().toString(),
+      id: getUniqueID(),
       key: '',
       value: '',
-      enabled: true
     };
     setHeaders([...headers, newHeader]);
+    // updateRouteStatusData('headers',[...headers, newHeader]);
   };
 
-  const handleFocus = (id: string) => {
-    setCurrentFocus(id);
-    setShowHeaderSuggestions(true);
+  const handleFocus = (id: string, value: string, field?: 'value') => {
+    if(currentFocus === id) return;
+    value = value.trim();
+    setCurrentFocus(field === 'value' ? getValueInputId(id) : id);
+    setShowHeaderSuggestions(true)
   };
 
   const handleBlur = () => {
     // Small delay to allow clicking on suggestions
-    setTimeout(() => {
+    clearTimeout(timeout_1.current);
+    timeout_1.current = setTimeout(() => {
       setShowHeaderSuggestions(false);
       setCurrentFocus(null);
-    }, 200);
+      updateRouteStatusData('headers',[...headers]);
+    }, 400);
   };
 
-  const selectSuggestion = (suggestion: string) => {
-    if (currentFocus) {
-      handleHeaderChange(currentFocus, 'key', suggestion);
+  const selectSuggestion = (id: string, field: 'key' | 'value', suggestion: string) => {
+     handleHeaderChange(id, field, suggestion, true);
+     
+    if (field === 'key' && currentFocus === id) {
+      setCurrentFocus(null);
+      setShowHeaderSuggestions(false);
+    }
+    else if(field === 'value' && isValueId && (currentFocus as ValueId).keyId === id){
+      setCurrentFocus(null);
       setShowHeaderSuggestions(false);
     }
   };
@@ -84,31 +118,31 @@ const ResponseHeaderSetting = () => {
       <div className="space-y-2">
         {headers.map((header) => (
           <div key={header.id} className="flex items-center gap-3">
-            <Checkbox 
+            {/* <Checkbox 
               checked={header.enabled}
               onCheckedChange={() => handleCheckboxChange(header.id)}
               className="w-4 h-4"
-            />
+            /> */}
             <div className="flex-1 grid grid-cols-2 gap-4">
               <div className="relative">
                 <input
                   type="text"
                   value={header.key}
                   onChange={(e) => handleHeaderChange(header.id, 'key', e.target.value)}
-                  onFocus={() => handleFocus(header.id)}
+                  onFocus={(e) => handleFocus(header.id, e.target.value)}
                   onBlur={handleBlur}
-                  className="w-full px-3 py-[3px] text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-[3px] font--code text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Key"
                 />
                 {showHeaderSuggestions && currentFocus === header.id && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg">
+                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
                     {COMMON_HEADERS.filter(h => 
                       h.toLowerCase().includes(header.key.toLowerCase())
                     ).map((suggestion) => (
                       <button
                         key={suggestion}
-                        className="px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer block w-full text-left "
-                        onClick={() => selectSuggestion(suggestion)}
+                        className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
+                        onClick={() => selectSuggestion(header.id, 'key', suggestion)}
                       >
                         {suggestion}
                       </button>
@@ -116,13 +150,38 @@ const ResponseHeaderSetting = () => {
                   </div>
                 )}
               </div>
-              <input
-                type="text"
-                value={header.value}
-                onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
-                className="w-full px-3 py-[3px] text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Value"
-              />
+
+              <div className="relative">
+                  <input
+                    type="text"
+                    value={header.value}
+                    onFocus={(e) => handleFocus(header.id, e.target.value, 'value')}
+                    onBlur={handleBlur}
+                    onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
+                    className="w-full px-3 py-[3px] font--code text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Value"
+                  />
+                  {showHeaderSuggestions && isValueId && (currentFocus as ValueId).keyId === header.id && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
+                    {getHeaderValues(header.key).filter(h => 
+                      h.toLowerCase().includes(header.value.toLowerCase())
+                    ).map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
+                        onClick={() => selectSuggestion(header.id, 'value', suggestion)}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div>
+                <button onClick={()=>handleRemoveHeader(header.id)} title="Remove header" type="button" className='group w-6 h-6 rounded-md border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-red-100/15'>
+                    <Trash2 size={15} className="text-gray-600 group-hover:text-red-600 transition-all duration-300 " />
+                </button>
             </div>
           </div>
         ))}
