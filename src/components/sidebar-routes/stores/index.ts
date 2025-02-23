@@ -10,13 +10,14 @@ const storeName = 'sidebar-routes';
 const defaultData: SideBarRouteStore = {
   selectedItem: null,
   contextItem: null,
+  navigatedEndpoint: null,
   projects: [
     {
       id: 'api',
       name: 'api',
       type: 'folder',
       isOpen: true,
-      children: [{ id: 'index', name: 'index', type: 'file' }]
+      children: [{ id: 'api/index', name: 'index', type: 'file' }]
     }
   ]
 };
@@ -36,7 +37,6 @@ export const getSideBarStoreField = <K extends keyof SideBarRouteStore>(fieldNam
   getStore<SideBarRouteStore, SideBarRouteStore[K]>(appProvider, storeName, (store) => store[fieldName]);
 
 export const restoreSideBarRouteStore = async ()=>{
-  try {
     const store = await appCachestorage.getItem<SideBarRouteStore>(storeName);
     if(store.data){
       deleteStore(appProvider, storeName);
@@ -62,10 +62,9 @@ export const restoreSideBarRouteStore = async ()=>{
       //   });
       // })
 
+    }else{
+      createStore<SideBarRouteStore>(appProvider, storeName, defaultData);
     }
-  } catch (error) { 
-    createStore<SideBarRouteStore>(appProvider, storeName, defaultData);
-  }
 }
 
 
@@ -210,5 +209,6 @@ const filterNodes = (nodes: TreeNode[]): TreeNode[] =>
 export interface SideBarRouteStore {
   selectedItem: TreeNode | null;
   contextItem: TreeNode | null;
+  navigatedEndpoint: null | string
   projects: TreeNode[];
 }

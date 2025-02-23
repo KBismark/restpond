@@ -13,6 +13,8 @@ import {
 import { addSideBarRoute, getSideBarStoreField, saveSideBarRouteStore, updateSideBarRouteStore } from './stores';
 import { removeNodeById, RouteType } from '../../helpers/routes';
 import { ContextId } from 'statestorejs';
+import { useNavigate, useParams } from 'react-router';
+import { removeAPIconnection } from '../../endpoint-view/utils/model';
 
 interface ContextMenuProps {
   position: ContextMenuPosition;
@@ -20,7 +22,6 @@ interface ContextMenuProps {
   onRename: () => void;
   // onDelete: () => void;
   isFolder: boolean;
-  parentContextId: ContextId
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -30,6 +31,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   // onDelete,
   isFolder
 }) => {
+  const navigate = useNavigate();
   const onCreateFolder = (folderData: RouteType[])=>{
     const contextItem = getSideBarStoreField('contextItem');
     if(contextItem){
@@ -52,16 +54,41 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const deleteRoute = () => {
     const contextItem = getSideBarStoreField('contextItem');
     if(contextItem){
+      const navigatedEndpoint = getSideBarStoreField('navigatedEndpoint');
+      const selecteditem = getSideBarStoreField('selectedItem')
       const treeData = getSideBarStoreField('projects')!;
+      
+      const resolvedId = `/${contextItem.id}`.replace(/\/{/g,'/:').replace(/}\//g,'/').replace(/\/index$/,'').replace(/}$/,'').trim();
+      
+      if(navigatedEndpoint?.trim()===resolvedId){
+        // Delete item and update project routes data
+        updateSideBarRouteStore({actors: ['projects', 'navigatedEndpoint', 'contextItem', 'selectedItem'], store: {
+          projects: removeNodeById(treeData, contextItem.id),
+          navigatedEndpoint: '',
+          contextItem: null,
+          selectedItem: selecteditem?.id === contextItem.id? null: selecteditem
+        }});
 
-      // Delete item and update project routes data
-      updateSideBarRouteStore({actors: ['projects'], store: {
-        projects: removeNodeById(treeData, contextItem.id)
-      }});
-      saveSideBarRouteStore();
+        removeAPIconnection(resolvedId); // Delete api data
+        
+        saveSideBarRouteStore();
+        
 
-      // Current contextMenu node was deleted. Close contextMenu.
-      closeContextMenu();
+        // Display empty page
+        navigate(`/projects/XHt7gdjFJsg5DgsjFgdKFfs`);
+      }else{
+        // Delete item and update project routes data
+        updateSideBarRouteStore({actors: ['projects', 'contextItem', 'selectedItem'], store: {
+          projects: removeNodeById(treeData, contextItem.id),
+          contextItem: null,
+          selectedItem: selecteditem?.id === contextItem.id? null: selecteditem
+        }});
+
+        removeAPIconnection(resolvedId); // Delete api data
+
+        saveSideBarRouteStore();
+        
+      }
     }
     
       

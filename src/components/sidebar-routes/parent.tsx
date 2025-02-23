@@ -1,28 +1,29 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useContext, useState } from 'react';
 import { TreeItem } from './item';
-import { TreeNode } from './types';
+import { ContextMenuPosition, TreeNode } from './types';
 import { TreeActions } from './actions';
-import { addSideBarRoute, getSideBarStoreField, updateSideBarRouteStore, useSideBarRouteStore } from './stores';
-import { ContextId, useStateContext } from 'statestorejs';
-import { SidebarState } from '.';
+import { addSideBarRoute, useSideBarRouteStore } from './stores';
 import { RouteType } from '../../helpers/routes';
+import { SideBarContext } from './stores/contexts';
 
 interface FolderTreeProps {
   // data: TreeNode[];
   // onUpdate: (nodes: TreeNode[]) => void;
   // onContextMenu: (e: React.MouseEvent, node: TreeNode, level: number) => void;
-  filter?: string;
-  parentContextId: ContextId
+  // filter?: string;
+  // parentContextId: ContextId
+  setContextPostion: Dispatch<SetStateAction<ContextMenuPosition | null>>
 }
 
 
-export const FolderTree: React.FC<FolderTreeProps> = ({ parentContextId }) => {
+export const FolderTree: React.FC<FolderTreeProps> = ({setContextPostion}) => {
   // const [selectedId, setSelectedId] = useState<string>();
   const {projects: data, selectedItem} = useSideBarRouteStore({watch: ['projects', 'selectedItem']})!;
 
-  const parentContext = useStateContext<SidebarState>(parentContextId, []);
+  // const parentContext = useContext(SideBarContext);
+  // useStateContext<SidebarState>(parentContextId, []);
   const onContextMenu = (e: React.MouseEvent)=>{
-    parentContext?.onContextMenu({x: e.clientX, y: e.clientY})
+    setContextPostion({x: e.clientX, y: e.clientY})
   }
 
 

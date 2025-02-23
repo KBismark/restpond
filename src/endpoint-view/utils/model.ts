@@ -51,6 +51,14 @@ export const setAPIconnection = (endpoint: string, connection: API_Connection|nu
 
 export const getAPIconnection = (endpoint: string) => apiConnections[endpoint]||null;
 
+export const removeAPIconnection = (endpoint: string) => {
+  const connection = apiConnections[endpoint]
+  if(connection){
+    apiConnections[endpoint] = null;
+  }
+  matchRouter.deactivateRoute(endpoint as `/${string}`);
+  projectsCacheStorage.setItem(endpoint, ''); //  Clear data
+};
 
 export const createEndpointConnection = (endpoint: string) => {
   matchRouter.registerRoute(endpoint as `/${string}`, async (requestData: RequestObject, params) => {

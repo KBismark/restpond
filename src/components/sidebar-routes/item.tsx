@@ -35,7 +35,7 @@ export const TreeItem: React.FC<TreeItemProps> = ({
   
   return (
     <button
-      title={url}
+      title={url.slice(1)}
       className={`
         flex items-center px-2 py-1 cursor-pointer hover:bg-blue-100/10 border-none w-full
         ${isSelected ? 'bg-blue-100/25' : ''}
@@ -48,17 +48,12 @@ export const TreeItem: React.FC<TreeItemProps> = ({
           const updatedRoutesData = actOnProjectRouteItem(routesData, item.id, (node)=>{
             const updateNode = {...node,isOpen: !node.isOpen};
 
-            // We do not want a rerender of all items, hence
-            // set selected item internally for this item component only
-            // setOpenStatus(updateNode.isOpen);
-
-            // Incase part of the application has subscribed to changes in selected item, 
-            // Sets selected item globally 
-            updateSideBarRouteStore({store: {selectedItem: updateNode}, actors: ['selectedItem']});
-            
             if(!isFolder){
-              // router.push({pathname: `/projects/XHt7gdjFJsg5DgsjFgdKFfs/${url.replace(/\//g,'~')}/${routeName.replace(/\//g,'~')}`})
+              updateSideBarRouteStore({store: {selectedItem: updateNode, navigatedEndpoint: routeName.replace(/~/g,'/').replace(/\/index$/,'')}, actors: ['selectedItem', 'navigatedEndpoint']});
+
               navigate(`/projects/XHt7gdjFJsg5DgsjFgdKFfs/${url.replace(/\//g,'~')}/${routeName.replace(/\//g,'~')}`)
+            }else{
+              updateSideBarRouteStore({store: {selectedItem: updateNode}, actors: ['selectedItem']});
             }
 
             return updateNode
