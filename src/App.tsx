@@ -20,6 +20,7 @@ import { useEndpointViewStore } from './endpoint-view/store';
 import BluryContainer from './components/commons/blury-container';
 import { Route, Routes } from 'react-router';
 import EndpointView from './endpoint-view';
+import { useRecentRequestResponseStore } from './store/recents';
 
 
 function App() {
@@ -77,9 +78,9 @@ function App() {
   if(!ready) return null;
 
   return (
-    <main className={`relative font-serif-f bg-blue-100/5 text-sm ${window.Main?'select-none': ''}`}>
+    <main className={`relative font-serif-f min-h-screen bg-blue-100/5 text-sm ${window.Main?'select-none': ''}`}>
       <MainHeader />
-       <Sidebar moveToTop={false} />
+       <Sidebar  />
        <Routes >
           {/* <Route path="/" element={<Dashboard />} />
           <Route path="/endpoints" element={<EndpointsDashboard />} />
@@ -105,7 +106,8 @@ export default App;
 
 
 const RecentRequest = ()=> {
-  const {recentRequest} = useEndpointViewStore({watch: ['recentRequest']})!;
+  // const {recentRequest} = useEndpointViewStore({watch: ['recentRequest']})!;
+  const {request} = useRecentRequestResponseStore({watch: ['request', 'endpoint']})!
   return (
     <>
       <div className="mt-6 mb-4">
@@ -121,14 +123,15 @@ const RecentRequest = ()=> {
             className: 'bg-gray-50 p-2 rounded'
           }}
         >
-          {recentRequest? <JsonEditor data={recentRequest} /> : <div className="p-1">No recent request</div>}
+          {request? <JsonEditor data={request} /> : <div className="p-1">No recent request</div>}
         </BluryContainer> 
     </>
   )
 }
 
 const RecentResponse = ()=> {
-  const {recentResponse} = useEndpointViewStore({watch: ['recentResponse']})!;
+  // const {recentResponse} = useEndpointViewStore({watch: ['recentResponse']})!;
+  const {response} = useRecentRequestResponseStore({watch: ['response', 'endpoint']})!
 
   return (
     <>
@@ -145,7 +148,7 @@ const RecentResponse = ()=> {
             className: 'bg-gray-50 p-2 rounded'
           }}
         >
-          {recentResponse? <JsonEditor data={recentResponse} /> : <div className="p-1">No recent response</div>}
+          {response? <JsonEditor data={response} /> : <div className="p-1">No recent response</div>}
         </BluryContainer> 
     </>
   )

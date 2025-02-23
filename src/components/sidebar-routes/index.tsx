@@ -16,7 +16,7 @@ export default function Sidebar() {
   const [position, setPosition] = useState<ContextMenuPosition|null>(null)
 
   return (
-    <div className={'sm:mt-16 sm:pt-2 z-20 lg:w-56 flex flex-col sm:fixed top-0 left-0 bottom-0 bg-white transition-all border-r border-r-gray-100 shadow-sm'}>
+    <div className={'sm:mt-12 sm:pt-2 z-20 lg:w-56 flex flex-col sm:fixed top-0 left-0 bottom-0 bg-white transition-all border-r border-r-gray-100 shadow-sm'}>
         <div className="flex-1 overflow-auto">
           <FolderTree setContextPostion={setPosition} />
         </div>

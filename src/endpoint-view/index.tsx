@@ -12,6 +12,7 @@ import { get } from 'http';
 import { MatchRouter } from '../helpers/router-claude-optimize';
 import { StorageResult } from '@codigex/cachestorage';
 import { matchRouter, sendActivatedRouteResponse } from '../helpers/server-app-bridge';
+import { updateRecentRequestResponseStore } from '../store/recents';
 
 const EndpointViewOldVersion = () => {
     const {file, id, routeName} = useParams<{id: string, file?: string, routeName: string}>()
@@ -81,6 +82,7 @@ const EndpointView = ()=> {
       if(cachedResponse.data){
         setApiData(cachedResponse.data);
         setSettings({status: 200, method: 'GET', connection: getAPIconnection(endpoint)});
+        updateRecentRequestResponseStore(endpoint)
       }else{
         setApiData(null); // No data - Shouldn't happen anyway
       }
@@ -88,7 +90,7 @@ const EndpointView = ()=> {
 
   return (
     <div className='2xl:justify-center 2xl:flex-row 2xl:flex'>
-      <div className="flex min-h-screen px-6 pt-3 pb-6 max-w-7xl sm:ml-16 md:ml-52 2xl:w-[1200px]">
+      <div className="flex px-6 pt-3 pb-6 max-w-7xl sm:ml-16 md:ml-52 2xl:w-[1200px]">
         <div className="flex-1 px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
               {/* Mian content */}

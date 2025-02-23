@@ -24,7 +24,7 @@ Respond to the following user prompt and format your answer as JSON object struc
 
 {
     "response": "<The actual response to the user prompt>",
-    "type": "text"
+    "type": "text|json"
 }
     
 User Prompt: ${userPrompt}

@@ -55,6 +55,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
   const selectedMethod = settings.method;
   const responseBodyText = apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...';
   const responseType = apiData? apiData[selectedMethod][selectedStatus].responseType : 'text';
+  const apiResponseHeaders = apiData? apiData[selectedMethod][selectedStatus].headers: [];
   // alert(`selectedStatus: ${selectedStatus} and method: ${settings.method}`);
   
   // const [selectedStatus, setSelectedStatus] = useState<ResponseStatus>(200);
@@ -99,8 +100,13 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
   }, [settings]);
 
   const onTypeChange = useCallback((type: number|string) => {
-    updateRouteStatusData('responseType', String(type).toLowerCase() as 'json'|'text');
-  }, [settings]);
+    type = String(type).toLowerCase()
+    updateRouteStatusData('responseType',  type as 'json'|'text');
+    updateRouteStatusData('headers', apiResponseHeaders.map(
+      header => header.key.trim().toLowerCase() === 'content-type' ?
+      ({...header, value: type === 'json'? 'application/json' : 'text/plain'  }) : header
+    ))
+  }, [selectedMethod, selectedStatus, apiData]);
 
   const onShowAPIKey = useCallback(()=>{
     setShowAPIKey(!showAPIKey);
@@ -136,7 +142,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
 
   if(!apiData) return null;
 
-  const apiResponseHeaders = apiData[selectedMethod][selectedStatus].headers;
+  
 
   return (
     <div className="w-full mt-6">
@@ -182,10 +188,10 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
 
             <BluryContainer
                 outerContainer={{
-                    className: (waitingAiResponse ? 'animate-pulse' : '')
+                    className: (waitingAiResponse ? 'animate-pulse rounded-lg' : 'rounded-lg')
                 }} 
                 innerContainer={{
-                    className: 'p-4 font--code text-[12px]'
+                    className: 'p-4 font--code text-[12px] rounded-lg'
                 }}
             >
               <div className="flex">
@@ -205,7 +211,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
                 </div> */}
                 <pre contentEditable={!waitingAiResponse}  ref={responseBodyRef} 
                   className={
-                    'w-full mb-4 outline-none border-none overflow-auto max-h-[400px] ' +
+                    'w-full mb-4 outline-none border-none overflow-auto min-h-[120px] max-h-[320px] ' +
                     (waitingAiResponse ? 'animate-pulse' : '')
                   } 
                 >
@@ -238,7 +244,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
                           
                         <input placeholder='Paste Gemini API key here'
                           className={
-                            'transition-all duration-300 rounded-sm bg-gray-100 py-[1px] px-2 outline-none text-[12px] font--code ' + 
+                            'transition-all duration-300 rounded-sm bg-gray-100 py-[1.5px] px-2 outline-none text-[12px] font--code ' + 
                             (showAPIKey ? 'w-[calc(100%-32px)]' : 'w-0 invisible') 
                           } 
                         />
@@ -261,7 +267,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
           </div> */}
         </TabsContent>
         <TabsContent value="headers" className="p-0 bg-white ">
-            <ResponseHeaderSetting apiHeaders={apiResponseHeaders} updateRouteStatusData={updateRouteStatusData} />
+            <ResponseHeaderSetting resType={responseType} apiHeaders={apiResponseHeaders} updateRouteStatusData={updateRouteStatusData} />
         </TabsContent>
       </Tabs>
     </div>

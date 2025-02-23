@@ -11,6 +11,7 @@ import { Header, RouteDataType } from './types';
 
 interface Props{
   apiHeaders: Header[];
+  resType: "json" | "text";
    updateRouteStatusData: <T extends keyof RouteDataType["GET"]["200"]>(key: T, value: RouteDataType["GET"]["200"][T]) => void
 }
 
@@ -37,7 +38,7 @@ const getValueInputId = (id: string) => {
 };
 
 
-const ResponseHeaderSetting = ({apiHeaders, updateRouteStatusData}: Props) => {
+const ResponseHeaderSetting = ({apiHeaders, resType, updateRouteStatusData}: Props) => {
   const [headers, setHeaders] = useState<Header[]>(apiHeaders);
   // const headers = apiHeaders;
   const [ showHeaderSuggestions, setShowHeaderSuggestions] = useState(false);
@@ -50,7 +51,14 @@ const ResponseHeaderSetting = ({apiHeaders, updateRouteStatusData}: Props) => {
     return ()=>clearTimeout(timeout_1.current);
   });
 
+  useEffect(()=>{
+    setHeaders(headers.map(header =>
+      header.key.trim().toLowerCase() === 'content-type' ? { ...header, value: resType === 'json'? 'application/json' : 'text/plain'  } : header
+    ))
+  }, [resType]);
+  
   const handleHeaderChange = (id: string, field: 'key' | 'value', value: string, isSuggestion?: boolean) => {
+    if(field === 'key'&&value.trim().toLowerCase()==='content-type') return;
     const newHeaders = headers.map(header =>
       header.id === id ? { ...header, [field]: value } : header
     );
@@ -80,7 +88,6 @@ const ResponseHeaderSetting = ({apiHeaders, updateRouteStatusData}: Props) => {
       value: '',
     };
     setHeaders([...headers, newHeader]);
-    // updateRouteStatusData('headers',[...headers, newHeader]);
   };
 
   const handleFocus = (id: string, value: string, field?: 'value') => {
@@ -116,75 +123,82 @@ const ResponseHeaderSetting = ({apiHeaders, updateRouteStatusData}: Props) => {
   return (
     <div className="w-full p-4">
       <div className="space-y-2">
-        {headers.map((header) => (
-          <div key={header.id} className="flex items-center gap-3">
-            {/* <Checkbox 
-              checked={header.enabled}
-              onCheckedChange={() => handleCheckboxChange(header.id)}
-              className="w-4 h-4"
-            /> */}
-            <div className="flex-1 grid grid-cols-2 gap-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={header.key}
-                  onChange={(e) => handleHeaderChange(header.id, 'key', e.target.value)}
-                  onFocus={(e) => handleFocus(header.id, e.target.value)}
-                  onBlur={handleBlur}
-                  className="w-full px-3 py-[3px] font--code text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Key"
-                />
-                {showHeaderSuggestions && currentFocus === header.id && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
-                    {COMMON_HEADERS.filter(h => 
-                      h.toLowerCase().includes(header.key.toLowerCase())
-                    ).map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
-                        onClick={() => selectSuggestion(header.id, 'key', suggestion)}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
+        {headers.map((header) => {
+          const disable = header.key.trim().toLowerCase()==='content-type';
+          return (
+            <div key={header.id} className="flex items-center gap-3">
+              {/* <Checkbox 
+                checked={header.enabled}
+                onCheckedChange={() => handleCheckboxChange(header.id)}
+                className="w-4 h-4"
+              /> */}
+              <div className="flex-1 grid grid-cols-2 gap-4">
+                <div className="relative">
                   <input
                     type="text"
-                    value={header.value}
-                    onFocus={(e) => handleFocus(header.id, e.target.value, 'value')}
+                    readOnly={disable}
+                    disabled={disable}
+                    value={header.key}
+                    onChange={(e) => handleHeaderChange(header.id, 'key', e.target.value)}
+                    onFocus={(e) => handleFocus(header.id, e.target.value)}
                     onBlur={handleBlur}
-                    onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
                     className="w-full px-3 py-[3px] font--code text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="Value"
+                    placeholder="Key"
                   />
-                  {showHeaderSuggestions && isValueId && (currentFocus as ValueId).keyId === header.id && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
-                    {getHeaderValues(header.key).filter(h => 
-                      h.toLowerCase().includes(header.value.toLowerCase())
-                    ).map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
-                        onClick={() => selectSuggestion(header.id, 'value', suggestion)}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  {showHeaderSuggestions && currentFocus === header.id && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
+                      {COMMON_HEADERS.filter(h => 
+                        h.toLowerCase().includes(header.key.toLowerCase())
+                      ).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
+                          onClick={() => selectSuggestion(header.id, 'key', suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                    <input
+                      type="text"
+                      readOnly={disable}
+                      disabled={disable}
+                      value={header.value}
+                      onFocus={(e) => handleFocus(header.id, e.target.value, 'value')}
+                      onBlur={handleBlur}
+                      onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
+                      className="w-full px-3 py-[3px] font--code text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Value"
+                    />
+                    {showHeaderSuggestions && isValueId && (currentFocus as ValueId).keyId === header.id && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-[300px] overflow-y-auto">
+                      {getHeaderValues(header.key).filter(h => 
+                        h.toLowerCase().includes(header.value.toLowerCase())
+                      ).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          className="px-3 py-2 text-sm hover:bg-blue-100/10 cursor-pointer block w-full text-left "
+                          onClick={() => selectSuggestion(header.id, 'value', suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                  <button disabled={disable} onClick={ !disable?()=>handleRemoveHeader(header.id):undefined} title="Remove header" type="button" className='group w-6 h-6 rounded-md border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-red-100/15'>
+                      <Trash2 size={15} className="text-gray-600 group-hover:text-red-600 transition-all duration-300 " />
+                  </button>
               </div>
             </div>
-            <div>
-                <button onClick={()=>handleRemoveHeader(header.id)} title="Remove header" type="button" className='group w-6 h-6 rounded-md border bg-gray-50 flex items-center justify-center cursor-pointer hover:bg-red-100/15'>
-                    <Trash2 size={15} className="text-gray-600 group-hover:text-red-600 transition-all duration-300 " />
-                </button>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       
       <Button

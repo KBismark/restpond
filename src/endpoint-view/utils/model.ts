@@ -1,6 +1,7 @@
 
 import { convertBodyStringToObject, getUniqueID, parseResponseBody } from ".";
 import { matchRouter, sendActivatedRouteResponse } from "../../helpers/server-app-bridge";
+import { removeAPIrecents, setAPIrecents } from "../../store/recents";
 import { projectsCacheStorage } from "../store";
 import { APIModel, RequestMethod, RequestMethodColor, RequestObject, ResponseObject, ResponseStatus, RouteDataType } from "../types";
 
@@ -57,6 +58,7 @@ export const removeAPIconnection = (endpoint: string) => {
     apiConnections[endpoint] = null;
   }
   matchRouter.deactivateRoute(endpoint as `/${string}`);
+  removeAPIrecents(endpoint);
   projectsCacheStorage.setItem(endpoint, ''); //  Clear data
 };
 
@@ -71,6 +73,11 @@ export const createEndpointConnection = (endpoint: string) => {
         responseType: 'text',
         headers: {}
       };
+
+      setAPIrecents(endpoint, {
+        request: requestData,
+        response: res
+      });
 
       return sendActivatedRouteResponse({
         request: requestData,
@@ -89,6 +96,12 @@ export const createEndpointConnection = (endpoint: string) => {
             responseType: 'text',
             headers: {}
           };
+
+          setAPIrecents(endpoint, {
+            request: requestData,
+            response: res
+          });
+
           return sendActivatedRouteResponse({
             request: requestData,
             response: res
@@ -108,14 +121,22 @@ export const createEndpointConnection = (endpoint: string) => {
             bodyString = "[Internal Server Error]: Can't parse response body";
           }
         }
+
+        const res = {
+          status: status,
+          body: bodyString,
+          responseType: restype,
+          headers: {}
+        };
+
+        setAPIrecents(endpoint, {
+          request: requestData,
+          response: {...res}
+        });
+
         return sendActivatedRouteResponse({
           request: requestData,
-          response: {
-            status: status,
-            body: bodyString,
-            responseType: restype,
-            headers: {}
-          }
+          response: res
         });
       } else {
         throw new Error('No data found');
@@ -127,6 +148,11 @@ export const createEndpointConnection = (endpoint: string) => {
         responseType: 'text',
         headers: {}
       };
+
+      setAPIrecents(endpoint, {
+        request: requestData,
+        response: res
+      });
 
       return sendActivatedRouteResponse({
         request: requestData,
