@@ -1,4 +1,4 @@
-export const encryptText = (key: string, text: string, options?: { igonereColumns: number[]; sign?: string }) => {
+const encryptText = (key: string, text: string, options?: { igonereColumns: number[]; sign?: string }) => {
   if (text.length < 1) return text;
   // Ensure parameters are strings
   key = `${key}`;
@@ -75,11 +75,7 @@ export const encryptText = (key: string, text: string, options?: { igonereColumn
 };
 
 const lengthRegexp = /(\?length[1-9][0-9]*)$/;
-export const decryptText = (
-  key: string,
-  text: string,
-  options?: { igonereColumns: number[]; sign: string }
-) => {
+const decryptText = (key: string, text: string, options?: { igonereColumns: number[]; sign: string }) => {
   if (text.length < 1) return { isTrusted: true, text: text };
   // Ensure parameters are strings
   key = `${key}`;
@@ -122,7 +118,7 @@ export const decryptText = (
 
   // No padding in encryption,
   // This object will contain columns with extra characters
-  const diff: {[k: string]: boolean} = {};
+  const diff: { [k: string]: boolean } = {};
   for (let i = 0; i < romColumnDiff; i++) {
     char = keyArray[i];
     diff[char] = true; // This column has extra character more than other columns
@@ -169,12 +165,35 @@ export const decryptText = (
   };
 };
 
-
-// const key_2 = 'c0fa1bc00531bd78ef38c628449c5102a28449c5102aeabd49b5dc3a2a516-a2a516ea6e';
-// const signature = '28449c5102aeabd49b5dc3a2a516-a2a516ea6ea9.c628449c5102a28449c5102aeabd4'; //
-// const ignoredColumns = [0, 7, 4, 11, 3, 33, 22, 18, 44];
+const key = 'c0fa1bc00531bd78ef38c628449c5102a28449c5102aeabd49b5dc3a2a516-a2a516ea6e';
+const signature = '28449c5102aeabd49b5dc3a2a516-a2a516ea6ea9.c628449c5102a28449c5102aeabd4'; //
+const ignoredColumns = [0, 26, 7, 4, 16, 3, 33, 22, 18, 12];
 
 // const enc1 = transposeText(key_2, 'I love you', { igonereColumns: ignoredColumns, sign: signature });
 // console.log(transposeText(key_2, enc1, { igonereColumns: ignoredColumns, sign: signature }));
 
 // console.log(inverseTransposedText(key_2, enc1, { igonereColumns: ignoredColumns, sign: signature }));
+
+export const encryptTextWithRounds = (text: string, round: number) => {
+  while (round > 0) {
+    round--;
+    text = encryptText(key, text, { igonereColumns: ignoredColumns, sign: signature });
+  }
+  return text;
+};
+
+export const decryptTextWithRounds = (text: string, round: number) => {
+  let result: {
+    isTrusted: boolean;
+    text: string;
+  } = {text, isTrusted: false}
+
+  while (round > 0) {
+    round--;
+    result = decryptText(key, result.text, { igonereColumns: ignoredColumns, sign: signature });
+    if(!result.isTrusted){
+      break;
+    }
+  }
+  return result;
+};

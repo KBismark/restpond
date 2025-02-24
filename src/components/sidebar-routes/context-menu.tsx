@@ -11,7 +11,7 @@ import {
   DropdownMenuItem
 } from '../ui/dropdown-menu';
 import { addSideBarRoute, getSideBarStoreField, saveSideBarRouteStore, updateSideBarRouteStore } from './stores';
-import { removeNodeById, RouteType } from '../../helpers/routes';
+import { findAllEndpoints, removeNodeById, RouteType } from '../../helpers/routes';
 import { ContextId } from 'statestorejs';
 import { useNavigate, useParams } from 'react-router';
 import { removeAPIconnection } from '../../endpoint-view/utils/model';
@@ -60,6 +60,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       
       const resolvedId = `/${contextItem.id}`.replace(/\/{/g,'/:').replace(/}\//g,'/').replace(/\/index$/,'').replace(/}$/,'').trim();
       
+      // Find and delete endpoint and all sub-endpoints if a folder
+      findAllEndpoints([contextItem], (node, endpoint) => {
+        removeAPIconnection(endpoint)
+      });
+
       if(navigatedEndpoint?.trim()===resolvedId){
         // Delete item and update project routes data
         updateSideBarRouteStore({actors: ['projects', 'navigatedEndpoint', 'contextItem', 'selectedItem'], store: {
@@ -69,13 +74,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           selectedItem: selecteditem?.id === contextItem.id? null: selecteditem
         }});
 
-        removeAPIconnection(resolvedId); // Delete api data
+        // removeAPIconnection(resolvedId); // Delete api data
         
         saveSideBarRouteStore();
         
 
         // Display empty page
-        navigate(`/projects/XHt7gdjFJsg5DgsjFgdKFfs`);
+        navigate(`/`);
       }else{
         // Delete item and update project routes data
         updateSideBarRouteStore({actors: ['projects', 'contextItem', 'selectedItem'], store: {
@@ -84,7 +89,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           selectedItem: selecteditem?.id === contextItem.id? null: selecteditem
         }});
 
-        removeAPIconnection(resolvedId); // Delete api data
+        // removeAPIconnection(resolvedId); // Delete api data
 
         saveSideBarRouteStore();
         

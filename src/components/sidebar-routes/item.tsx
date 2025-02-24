@@ -1,6 +1,6 @@
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File } from 'lucide-react';
 import { TreeNode } from './types'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getSideBarStoreField, updateSideBarRouteStore } from './stores';
 import { actOnProjectRouteItem } from '../../helpers/routes';
 import { router } from '../router';
@@ -28,19 +28,42 @@ export const TreeItem: React.FC<TreeItemProps> = ({
   // The exact route name to match whic may include dynamic routes
   routeName
 }) => {
-  const navigate = useNavigate();
   const isFolder = item.type === 'folder';
   const indent = level * 12;
+
+  const navigate = useNavigate();
+  const ref = useRef<HTMLSpanElement>(null);
+  const [renaming, setRenaming] = useState(false);
+
+  useEffect(()=>{
+    if(renaming&&ref.current){
+      ref.current.focus();
+    }
+  },[renaming])
+  
+  
   
   
   return (
     <button
+
       title={url.slice(1)}
       className={`
         flex items-center px-2 py-1 cursor-pointer hover:bg-blue-100/10 border-none w-full
         ${isSelected ? 'bg-blue-100/25' : ''}
       `}
       style={{ paddingLeft: `${indent}px` }}
+
+      // onDoubleClick={(e)=>{
+      //   if(!renaming){
+      //     setRenaming(true)
+      //   }
+      // }}
+      onBlur={()=>{
+        if(renaming){
+          setRenaming(false)
+        }
+      }}
       onClick={() => {
         const routesData = getSideBarStoreField('projects');
         if(routesData){
@@ -88,7 +111,7 @@ export const TreeItem: React.FC<TreeItemProps> = ({
           <File fill='#b0bec5' stroke='#263238' size={16} />
         )}
         
-        <span className="ml-2 text-sm font-sans-f font-medium truncate">{item.name}</span>
+        <span ref={ref} contentEditable={renaming} className="ml-2 text-sm font-sans-f font-medium truncate">{item.name}</span>
     </button>
   );
 };

@@ -11,6 +11,7 @@ import { useCallback, useRef, useState } from 'react';
 import ActionBar from '../commons/action-tabs';
 import { getRouteNames, RouteType } from '../../helpers/routes';
 import { Button } from '../ui/button';
+import { exportData } from '../../endpoint-view/utils/exporter';
 
 interface TreeActionsProps {
   onCreateFile?: (fileData: RouteType[]) => void;
@@ -67,7 +68,11 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
     
     close() // Closes action pop up
 
-   },[type])
+   },[type]);
+
+   const onExport = ()=>{
+      exportData();
+   }
 
   
 
@@ -81,7 +86,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
               Import
             </Button>
 
-            <Button onClick={undefined} size={'sm'} variant={'default'} className="transition-all duration-500 w-full h-7 bg-blue-500 active:bg-blue-gray-300  hover:bg-blue-700 text-[12px] " >
+            <Button onClick={onExport} size={'sm'} variant={'default'} className="transition-all duration-500 w-full h-7 bg-blue-500 active:bg-blue-gray-300  hover:bg-blue-700 text-[12px] " >
               Export
             </Button>
 
