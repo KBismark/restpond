@@ -43,11 +43,11 @@ export const FolderTree: React.FC<FolderTreeProps> = ({setContextPostion}) => {
 
 
   const renderTree = (nodes: TreeNode[], level: number = 0, url: string ='') => {
-    return nodes.map((node) => {
+    return nodes.map((node, index) => {
       const currentUrl = `${url}/${node.name}`;
       const actualRouteName = `${url}~${node.isDynamic? node.name.replace('{',':').replace(/(\})$/, '') : node.name}`;
       return (
-        <div key={node.id}>
+        <div key={`${node.id}-${index}`}>
           <TreeItem
             url={currentUrl}
             routeName={actualRouteName}

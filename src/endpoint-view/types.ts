@@ -1,3 +1,5 @@
+import { API_Connection } from "./utils/model";
+
 export interface RequestMethodColor {
   GET: '#2e90fa';
   POST: '#ef6820';
@@ -42,7 +44,7 @@ export type RouteDataType = APIModel['apis'][string];
 export type EndpointViewSettings = {
   status: ResponseStatus;
   method: RequestMethod;
-  connection: { method: RequestMethod; status: ResponseStatus } | null;
+  connection: API_Connection | null;
 };
 
 export interface RequestObject {

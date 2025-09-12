@@ -44,3 +44,4 @@ lerna-debug.log*
 
 src/assets/fluent*.svg
 src/assets/circled*.svg
+.qodo

@@ -42,9 +42,11 @@ export const defaultResponseRouteValues = () => requestMethods.reduce((acc, meth
 , {} as APIModel['apis']['']);
 
 
-export type API_Connection = {method: RequestMethod, status: ResponseStatus}
+export type API_Connection = Partial<Record<RequestMethod, ResponseStatus>>; //{method: RequestMethod, status: ResponseStatus}
 
-export const apiConnections: {[k: string]: API_Connection|null} = {};
+export let apiConnections: {[k: string]: API_Connection|null} = {};
+
+export const resetAPIconnections = (connections: { [k: string]: API_Connection | null }) => apiConnections = connections;
 
 export const setAPIconnection = (endpoint: string, connection: API_Connection|null) => {
   apiConnections[endpoint] = connection;
@@ -52,14 +54,22 @@ export const setAPIconnection = (endpoint: string, connection: API_Connection|nu
 
 export const getAPIconnection = (endpoint: string) => apiConnections[endpoint]||null;
 
-export const removeAPIconnection = (endpoint: string) => {
-  const connection = apiConnections[endpoint]
-  if(connection){
-    apiConnections[endpoint] = null;
-  }
+export const removeAPIconnection = async (endpoint: string) => {
+
+  // If endpoint's connection exists, set to null
+  getAPIconnection(endpoint) && setAPIconnection(endpoint, null);
+
+  // Disconnect endpoint from recieving requests
   matchRouter.deactivateRoute(endpoint as `/${string}`);
+
+  // Remove any recent request and response data
   removeAPIrecents(endpoint);
-  projectsCacheStorage.setItem(endpoint, ''); //  Clear data
+
+  // Remove endpoint's data from the cache storage
+  try{
+    await projectsCacheStorage.removeItem(endpoint);
+  }
+  catch(err){/* Can't remove */}
 };
 
 export const createEndpointConnection = (endpoint: string) => {
@@ -88,11 +98,11 @@ export const createEndpointConnection = (endpoint: string) => {
     try {
       const routeItem = await projectsCacheStorage.getItem<RouteDataType>(endpoint);
       if (routeItem.data) {
-
-        if(requestData.method.toLowerCase() !== connection.method.toLowerCase()){
+        const requestMethod = requestData.method.toUpperCase() as RequestMethod;
+        if(!connection[requestMethod]){
           const res: ResponseObject['response'] = {
             status: 500,
-            body: `[Method Not Allowed]: Endpoint: ${endpoint} is disconnected for ${requestData.method.toUpperCase()} requests`,
+            body: `[Method Not Allowed]: Endpoint: ${endpoint} is disconnected for ${requestMethod} requests`,
             responseType: 'text',
             headers: {}
           };
@@ -108,7 +118,7 @@ export const createEndpointConnection = (endpoint: string) => {
           });
         }
           
-        let { method, status } = connection;
+        let { method, status } = { method: requestMethod, status: connection[requestMethod] as ResponseStatus };
          let bodyString = parseResponseBody(routeItem.data[method][status].body, params);
         let restype = routeItem.data[method][status].responseType;
         if (restype === 'json') {

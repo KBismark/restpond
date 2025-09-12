@@ -6,7 +6,7 @@ import { actOnProjectRouteItem, RouteType } from "../../../helpers/routes";
 
 
 const storeName = 'sidebar-routes';
-
+export const sidebarRoutesStoreId = storeName;
 const defaultData: SideBarRouteStore = {
   selectedItem: null,
   contextItem: null,

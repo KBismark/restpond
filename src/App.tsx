@@ -82,9 +82,6 @@ function App() {
       <MainHeader />
        <Sidebar  />
        <Routes >
-          {/* <Route path="/" element={<Dashboard />} />
-          <Route path="/endpoints" element={<EndpointsDashboard />} />
-          <Route path="/login" element={<LoginForm />} /> */}
           <Route path='/' element={<EndpointView />} />
           <Route path='/projects/:projectId/:file/:routeName' element={<EndpointView />} />
        </Routes>
@@ -95,7 +92,7 @@ function App() {
         <div className="lg2xl:max-w-[500px] lg2xl:w-full lgx:w-[400px] lgx:fixed lgx:right-0 lgx:top-0 lgx:bottom-0 overflow-y-auto bg-blue-100/5 px-6 box-border lgx:mt-16 lgx:pt-2 pt-14 pb-24 ">
           <RecentRequest />
           <RecentResponse />
-      </div>
+        </div>
       }
     </main>
   );

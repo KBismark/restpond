@@ -12,6 +12,8 @@ import ActionBar from '../commons/action-tabs';
 import { getRouteNames, RouteType } from '../../helpers/routes';
 import { Button } from '../ui/button';
 import { exportData } from '../../endpoint-view/utils/exporter';
+import { importData } from '../../endpoint-view/utils/importer';
+import { useNavigate } from 'react-router';
 
 interface TreeActionsProps {
   onCreateFile?: (fileData: RouteType[]) => void;
@@ -26,9 +28,10 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
   openRouteCreationDropDown,
   onCloseButtonAtTopClicked
 }) => {
+  const navigate = useNavigate();
   const [isOpened, setIsOpened] = useState(!!openRouteCreationDropDown);
    const [type, setType] = useState<'File'|'Folder'|''>('');
-   const inputRef = useRef<HTMLInputElement>(null)
+   const inputRef = useRef<HTMLInputElement>(null);
 
    const triggeredByFile = useCallback(()=>{
     setType('File');
@@ -69,9 +72,17 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
     close() // Closes action pop up
 
    },[type]);
-
    const onExport = ()=>{
       exportData();
+   }
+
+   const onImport = async ()=>{
+      try {
+        await importData();
+        navigate('/');
+      } catch (error) {
+        // TODO: Coldn't import data
+      }
    }
 
   
@@ -82,7 +93,7 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
         onClose={onCloseButtonAtTopClicked}
         renderInPlaceOfClose={
           <div className="flex flex-row items-center gap-2">
-            <Button onClick={undefined} size={'sm'} variant={'outline'} className="transition-all text-blue-500 hover:text-blue-600 hover:bg-[#2f9dbe09] duration-500 w-full h-7 text-[12px]" >
+            <Button onClick={onImport} size={'sm'} variant={'outline'} className="transition-all text-blue-500 hover:text-blue-600 hover:bg-[#2f9dbe09] duration-500 w-full h-7 text-[12px]" >
               Import
             </Button>
 
@@ -135,7 +146,6 @@ export const TreeActions: React.FC<TreeActionsProps> = ({
               className={`flex w-full justify-center items-center px-4 py-2 text-sm bg-white hover:bg-gray-100/70 rounded-lg transition-all duration-300`}
               onClick={save}
             >
-              {/* <X size={14} className="mr-1" aria-hidden={'true'} /> */}
               Save
             </button>
           </ActionBar>

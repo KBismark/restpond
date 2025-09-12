@@ -1,9 +1,9 @@
-import { getSideBarStoreField } from "../../components/sidebar-routes/stores"
-import { TreeNode } from "../../components/sidebar-routes/types"
+import { getSideBarStoreField, SideBarRouteStore } from "../../components/sidebar-routes/stores"
 import { encryptTextWithRounds } from "../../helpers/crypt";
 import { findAllEndpoints } from "../../helpers/routes"
 import { projectsCacheStorage } from "../store";
 import { RouteDataType } from "../types";
+import { apiConnections } from "./model";
 
 
 export const exportData = async ()=>{
@@ -18,7 +18,24 @@ export const exportData = async ()=>{
       endpoints.map((endpoint) => projectsCacheStorage.getItem<RouteDataType>(endpoint).then(res=>res.data))
     );
 
-    const exportingData = {endpoints, data: endpointsData}
+    
+    const routes = getSideBarStoreField('projects')!;
+    const sidebarRoutes: SideBarRouteStore = {
+      selectedItem: null,
+      contextItem: null,
+      navigatedEndpoint: null,
+      projects: routes || [
+        {
+          id: 'api',
+          name: 'api',
+          type: 'folder',
+          isOpen: true,
+          children: [{ id: 'api/index', name: 'index', type: 'file' }]
+        }
+      ]
+    };
+
+    const exportingData = {endpoints, sidebar: sidebarRoutes, connections: apiConnections, data: endpointsData}
 
     const url = URL.createObjectURL(
       new Blob([encryptTextWithRounds(JSON.stringify(exportingData), 1)], 
@@ -29,7 +46,7 @@ export const exportData = async ()=>{
     link.download = 'restpond.rest'; // Default filename
     link.click();
 
-    // Revoke the object URL to avoid memory leaks
+    // Avoids memory leaks
     URL.revokeObjectURL(url);
     
   } catch (error) {

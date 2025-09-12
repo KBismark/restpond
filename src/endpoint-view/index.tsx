@@ -165,21 +165,13 @@ type ViewTitleOptionsProps = {
 };
 
 const ViewTitleOptions = ({title, settings, updateSettings, serverEndpoint}: ViewTitleOptionsProps) => {
-  // const [selectedMethod, setSelectedMethod] = useState<RequestMethod>('GET');
   const selectedMethod = settings.method;
   const selectedStatus = settings.status;
   const connection = settings.connection;
-  // alert(selectedMethod)
-  // alert(settings.status)
-
-  // if(!apiData) return null;
-
   
-  const isConnected = !connection? false : selectedMethod === connection.method && selectedStatus === connection.status;
+  const isConnected = !connection? false : connection[selectedMethod] === selectedStatus;
 
   const onMethodChange = (method: string|number) => {
-    
-    // method!==selectedMethod&&setSelectedMethod(method as RequestMethod);
     updateSettings((prev: EndpointViewSettings)=>{
       return {...prev, method: method as RequestMethod}
     });
@@ -188,23 +180,35 @@ const ViewTitleOptions = ({title, settings, updateSettings, serverEndpoint}: Vie
   const onConnect = () => {
     if(isConnected){
       // Disconnect
-      setAPIconnection(serverEndpoint, null);
       updateSettings((prev: EndpointViewSettings)=>{
-        return {...prev, connection: null}
+        const newConection = {...(prev.connection||{}), [selectedMethod]: null};
+        
+        // Check if all connections are disconnected and deactivate the API connection
+        if(!/[1-5][0-9][0-9]/.test(Object.values(newConection).join(' '))){
+          setAPIconnection(serverEndpoint, null);
+          matchRouter.deactivateRoute(serverEndpoint as `/${string}`);
+          return {...prev, connection: null}
+        }
+
+        // Update connection
+        setAPIconnection(serverEndpoint, newConection);
+        return {...prev, connection: newConection}
       });
-      matchRouter.deactivateRoute(serverEndpoint as `/${string}`);
       return;
     }
 
-    const config = {method: selectedMethod, status: selectedStatus};
-    setAPIconnection(serverEndpoint, config);
-
+    // Connect
     updateSettings((prev: EndpointViewSettings)=>{
-      return {...prev, connection: config}
+      const newConection = {...(prev.connection||{}), [selectedMethod]: selectedStatus};
+      setAPIconnection(serverEndpoint, newConection);
+
+      // Check if all connections were disconnected and create a new connection
+      if(!/[1-5][0-9][0-9]/.test(Object.values((prev.connection||{})).join(' '))){
+        createEndpointConnection(serverEndpoint);
+      }
+      return {...prev, connection: newConection}
     });
 
-    createEndpointConnection(serverEndpoint);
-   
   }
   
   return (

@@ -1,11 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Set  API KEY to EXPO_PUBLIC_GEMINI_API_KEY in your environment keys
-const API_KEY = '';
-// process.env.REACT_APP_GEMINI_API_KEY||'';
-
-const genAI = new GoogleGenerativeAI(API_KEY as string);
-
+import { getAPIkey } from '../../store/global';
 
 const generationConfig = {
   temperature: 0.9, // Adjust as needed.  Lower for more predictable, higher for more creative.
@@ -38,7 +32,11 @@ export async function generateContentAsJSON(userPrompt: string) {
     contents: [{ role: 'user', parts: [{ text: getPrompt(userPrompt) }] }],
     generationConfig
   };
-
+  const apiKey = await getAPIkey();
+  if(!apiKey){
+    throw new Error('No API key provided');
+  }
+  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.0-pro-exp-02-05' }); // gemini-1.5-flash
 
   try {

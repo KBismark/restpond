@@ -65,7 +65,7 @@ const ResponseHeaderSetting = ({apiHeaders, resType, updateRouteStatusData}: Pro
     setHeaders(newHeaders);
 
     // Change event is fired continuously when typing in input field
-    // So, we only update the parent component state when it's a suggestion
+    // So, only update the parent component state when it's a suggestion
     isSuggestion && updateRouteStatusData('headers', newHeaders);
   };
 

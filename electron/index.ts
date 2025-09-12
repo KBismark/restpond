@@ -270,7 +270,7 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-let dfg = 0;
+
 // listen the channel `message` and resend the received message to the renderer process
 ipcMain.on('message', (event: IpcMainEvent, message: any) => {
   console.log(`From Renderer: ${message}`);
@@ -287,7 +287,6 @@ ipcMain.on('message', (event: IpcMainEvent, message: any) => {
   //   {} as ServerResponse
   // );
   // }, 500);
-  dfg++;
 });
 
 // ipcMain.on('activate-route', (event: IpcMainEvent, message: any) => {

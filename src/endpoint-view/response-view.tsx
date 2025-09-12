@@ -10,6 +10,7 @@ import ResponseHeaderSetting from './set-hearders';
 import { APIModel, EndpointViewSettings, ResponseStatus, RouteDataType } from './types';
 import { projectsCacheStorage } from './store';
 import { defaultResponseRouteValues, defaultRouteModel, requestMethods, responseStatuses } from './utils/model';
+import { getAPIkey, storeAPIkey } from '../store/global';
 
 interface TabItemProps {
   label: string;
@@ -62,10 +63,23 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
   // const [responseBodyText, setResponseBody] = useState<string>(apiData? apiData[selectedMethod][selectedStatus].body : 'Paste response body here...');
   const [waitingAiResponse, setWaitingAiResponse] = useState<boolean>(false);
   const [showAPIKey, setShowAPIKey] = useState<boolean>(true);
+  const [apiKey, setAPIkey] = useState('');
   const aiPromptRef = useRef<HTMLTextAreaElement>(null);
   const responseBodyRef = useRef<HTMLPreElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
   
-  
+   useEffect(()=>{
+    getAPIkey().then((key)=>{
+      setAPIkey(key)
+    })
+  },[]);
+
+   useEffect(()=>{
+      if(apiKey.length>0 && inputRef.current){
+        inputRef.current.value = apiKey;
+      }
+    })
+
   useEffect(() => {
 
       const responseBody = responseBodyRef.current as unknown as HTMLPreElement|null
@@ -74,13 +88,6 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
 
           const onBlur = (e: FocusEvent)=>{
               const value = responseBody.innerText.trim();
-              // const store = getEndpointViewStore();
-              // if(store){
-              //   updateEndpointViewStore({
-              //     actors: ['response'],
-              //     store: {response: {...store.response, body: {...store.response.body, [store.response.status]: value}  }}
-              //   });
-              // }
               responseBody.innerText = value;
               // setResponseBody(value);
               updateRouteStatusData('body', value);
@@ -99,6 +106,9 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
     updateSettings({...settings, status: status as ResponseStatus});
   }, [settings]);
 
+ 
+  
+
   const onTypeChange = useCallback((type: number|string) => {
     type = String(type).toLowerCase()
     updateRouteStatusData('responseType',  type as 'json'|'text');
@@ -111,6 +121,19 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
   const onShowAPIKey = useCallback(()=>{
     setShowAPIKey(!showAPIKey);
   }, [showAPIKey]);
+
+  const onAPIKeyInputBlur = (e: React.FocusEvent<HTMLInputElement, Element>)=>{
+    if(e.target){
+      const value = (e.target as any).value.trim();
+      if(value){
+        storeAPIkey(value);
+        setAPIkey(value);
+        
+      }
+
+    }
+    
+  }
 
   const onSend = useCallback(async () => {
 
@@ -156,7 +179,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
           <div className='flex items-center gap-4'>
              <Selector 
                 stateful={false}
-                options={responseStatuses as unknown as string[]}
+                options={responseStatuses}
                 selectedKey={selectedStatus as unknown as string}
                 onChange={onStatusChange}
                 className='h-8 shadow-none border-none'
@@ -217,16 +240,6 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
                 >
                   {responseBodyText||'Paste response body here...'}
                 </pre>
-                 {/* <SyntaxHighlighter 
-                    ref={responseBodyRef} 
-                    customStyle={{outline: 'none', border: 'none', maxHeight: 500, overflow: 'auto', backgroundColor: 'transparent', width: '100%', marginBottom: 16}} 
-                    language="json" 
-                    // style={{'pre': {outline: 'none', border: 'none'}}}
-                >
-                    {
-                      responseBodyText
-                    }
-                </SyntaxHighlighter> */}
               </div>
               <div className='flex flex-col items-center mt-4 bg-white px-2 py-1 rounded-md max-h-40'>
                     <textarea disabled={waitingAiResponse} ref={aiPromptRef} className="w-[calc(100%-32px)] mb-1 pt-1 outline-none text-[12px] font--code resize-none max-h-60" placeholder='Generate a sample user posts' ></textarea>
@@ -242,7 +255,7 @@ const ResponseView = ({serverEndpoint, apiData, updateRouteStatusData, settings,
                           <Settings2 size={16} />
                         </Button>
                           
-                        <input placeholder='Paste Gemini API key here'
+                        <input value={apiKey} ref={inputRef} onBlur={onAPIKeyInputBlur} onPaste={onAPIKeyInputBlur as any} placeholder='Paste Gemini API key here'
                           className={
                             'transition-all duration-300 rounded-sm bg-gray-100 py-[1.5px] px-2 outline-none text-[12px] font--code ' + 
                             (showAPIKey ? 'w-[calc(100%-32px)]' : 'w-0 invisible') 

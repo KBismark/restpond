@@ -166,13 +166,8 @@ const decryptText = (key: string, text: string, options?: { igonereColumns: numb
 };
 
 const key = 'c0fa1bc00531bd78ef38c628449c5102a28449c5102aeabd49b5dc3a2a516-a2a516ea6e';
-const signature = '28449c5102aeabd49b5dc3a2a516-a2a516ea6ea9.c628449c5102a28449c5102aeabd4'; //
+const signature = '28449c5102aeabd49b5dc3a2a516-a2a516ea6ea9.c628449c5102a28449c5102aeabd4'; 
 const ignoredColumns = [0, 26, 7, 4, 16, 3, 33, 22, 18, 12];
-
-// const enc1 = transposeText(key_2, 'I love you', { igonereColumns: ignoredColumns, sign: signature });
-// console.log(transposeText(key_2, enc1, { igonereColumns: ignoredColumns, sign: signature }));
-
-// console.log(inverseTransposedText(key_2, enc1, { igonereColumns: ignoredColumns, sign: signature }));
 
 export const encryptTextWithRounds = (text: string, round: number) => {
   while (round > 0) {

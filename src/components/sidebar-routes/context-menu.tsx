@@ -154,7 +154,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 </DropdownMenuItem>
                 <DropdownMenuItem  className='group hover:bg-red-100/20 transition-all duration-600 focus:bg-red-100/20 flex justify-center'>
                     <button
-                      className={`flex w-[calc(100%-32px)] items-center px-4 py-2 text-sm text-red-600 bg-white rounded-lg group-hover:bg-transparent  group-hover:rounded-none group-hover:w-full transition-all duration-500`}
+                      className={`flex w-[calc(100%-32px)] items-center px-4 py-2 text-sm text-red-600 bg-white rounded-lg group-hover:bg-transparent group-hover:rounded-none group-hover:w-full transition-all duration-500`}
                       onClick={deleteRoute}
                     >
                       <Trash2 size={14} className="mr-4" aria-hidden={'true'} />
